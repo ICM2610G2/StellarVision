@@ -96,7 +96,6 @@ fun Login(controller: NavController)
                     )
                 }
             }
-
         )
         AppText(
             "¿Olvidaste tu Contraseña?",
@@ -131,7 +130,6 @@ fun Login(controller: NavController)
         )
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable
