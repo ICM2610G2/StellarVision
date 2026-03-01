@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -39,6 +40,7 @@ import com.example.stellarvision.ui.atoms.AppSeparator
 import com.example.stellarvision.ui.atoms.AppText
 import com.example.stellarvision.ui.atoms.AppTextField
 import com.example.stellarvision.ui.molecules.AppHeader
+import com.example.stellarvision.ui.molecules.SocialButtons
 import com.example.stellarvision.ui.theme.InterFont
 import com.example.stellarvision.ui.theme.OnSurfaceVariant
 import com.example.stellarvision.ui.theme.Primary
@@ -121,37 +123,11 @@ fun Login(controller: NavController)
         Spacer(
             modifier = Modifier.height(8.dp)
         )
-        AppButton(
-            "Continuar con Google",
-            onClick = {},
-            modifier = Modifier.padding(horizontal = 16.dp)
-                .clickable(onClick = {}),
-            color = OnSurfaceVariant,
-            icon = R.drawable.google_icon,
-            contentDescription = "Logo Google",
-            textColor = Primary
-            )
-        Spacer(
-            modifier = Modifier.height(8.dp)
-        )
-        AppButton(
-            "Continuar con Apple",
-            onClick = {},
-            modifier = Modifier.padding(horizontal = 16.dp)
-                .clickable(onClick = {}),
-            color = OnSurfaceVariant,
-            icon = R.drawable.apple_icon,
-            contentDescription = "Logo Apple",
-            textColor = Primary
-        )
-        Spacer(
-            modifier = Modifier.height(8.dp)
-        )
-        AppText(
+        SocialButtons(
+            onGoogleClick = {},
+            onAppleClick = {},
             "¿No tienes una cuenta? Registrate",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.clickable(onClick = {})
+            modifier = Modifier.padding(horizontal = 16.dp)
         )
     }
 }
