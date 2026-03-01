@@ -11,7 +11,16 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
 //COLORES STELLARVISION
-val AzulClaro = Color(0xFF97ACC8)
-val AzulOscuro = Color(0xFF051230)
-val Gris = Color(0xFFB6BFC1)
+val Secondary = Color(0xFF97ACC8)
+val Primary = Color(0xFF051230)
+val Gray = Color(0xFFB6BFC1)
 
+val LightGray = Color(0xFFE0E0E0)
+
+val Background = Color.White
+val Surface = Color.White
+
+val OnPrimary = Color.White
+val OnSurface = Primary
+val OnSurfaceVariant = LightGray
+val Outline = Gray
