@@ -139,7 +139,7 @@ fun Perfil(controller: NavController)
         }
 
         Spacer(Modifier.weight(1f))
-        //Barra de navegaciom
+        //BottomBar(controller, iconsNavBar)
     }
 }
 

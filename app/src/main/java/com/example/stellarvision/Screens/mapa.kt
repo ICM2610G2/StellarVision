@@ -37,7 +37,7 @@ fun Mapa(controller: NavController)
             MaterialTheme.colorScheme.onBackground
         )
 
-        //Barra de navegacion
+        //BottomBar(controller, iconsNavBar)
     }
 }
 
