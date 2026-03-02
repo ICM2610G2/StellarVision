@@ -18,6 +18,7 @@ fun BottomBar(
     controller: NavController,
     items: List<NavItem>,
     modifier: Modifier = Modifier,
+    content: @Composable (PaddingValues) -> Unit
 ) {
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
 
@@ -30,6 +31,7 @@ fun BottomBar(
                 controller.navigate(iconsNavBar[selectedIndex].route)
             }
         )
-    }
-    ) { paddingValues -> paddingValues }
+    },
+        content = content
+    )
 }
