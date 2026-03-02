@@ -1,9 +1,15 @@
 package com.example.stellarvision.Navigation
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.stellarvision.Model.NavItem
+import com.example.stellarvision.R
 import com.example.stellarvision.Screens.Actividad
 import com.example.stellarvision.Screens.Homepage
 import com.example.stellarvision.Screens.Login
@@ -29,6 +35,7 @@ enum class AppScreens {
 @Composable
 fun Navigation(){
     val navController = rememberNavController()
+
     NavHost(navController, AppScreens.Login.name) {
         composable(AppScreens.Login.name) {
             Login(navController)
