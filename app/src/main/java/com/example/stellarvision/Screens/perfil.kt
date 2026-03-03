@@ -22,6 +22,7 @@ import com.example.stellarvision.R
 import com.example.stellarvision.ui.molecules.AppHeader
 import com.example.stellarvision.ui.atoms.AppText
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.List
@@ -33,7 +34,7 @@ import androidx.compose.material3.Icon
 @Composable
 fun Perfil(controller: NavController)
 {
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp),
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp).statusBarsPadding(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ){
