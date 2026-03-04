@@ -125,6 +125,7 @@ fun Login(controller: NavController)
         SocialButtons(
             onGoogleClick = {},
             onAppleClick = {},
+            onTextClick = {controller.navigate("Register1")},
             "¿No tienes una cuenta? Registrate",
             modifier = Modifier.padding(horizontal = 16.dp)
         )
