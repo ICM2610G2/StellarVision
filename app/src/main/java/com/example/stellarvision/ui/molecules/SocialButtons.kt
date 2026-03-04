@@ -23,6 +23,7 @@ import org.w3c.dom.Text
 fun SocialButtons(
     onGoogleClick : () -> Unit,
     onAppleClick : () -> Unit,
+    onTextClick : () -> Unit,
     text: String,
     modifier : Modifier = Modifier
 ){
@@ -34,7 +35,8 @@ fun SocialButtons(
         AppButton(
             "Continuar con Google",
             onClick = onGoogleClick,
-            modifier = Modifier.padding(horizontal = 16.dp),
+            modifier = Modifier.padding(horizontal = 16.dp)
+                .clickable(onClick = onGoogleClick),
             color = OnSurfaceVariant,
             icon = R.drawable.google_icon,
             contentDescription = "Logo Google",
@@ -44,7 +46,7 @@ fun SocialButtons(
             "Continuar con Apple",
             onClick = onAppleClick,
             modifier = Modifier.padding(horizontal = 16.dp)
-                .clickable(onClick = {}),
+                .clickable(onClick = onAppleClick),
             color = OnSurfaceVariant,
             icon = R.drawable.apple_icon,
             contentDescription = "Logo Apple",
@@ -54,7 +56,7 @@ fun SocialButtons(
             text,
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.clickable(onClick = {})
+            modifier = Modifier.clickable(onClick = onTextClick)
         )
     }
 }

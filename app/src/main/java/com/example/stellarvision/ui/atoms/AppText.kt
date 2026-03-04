@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 
 @Composable
 fun AppText(
@@ -13,11 +14,13 @@ fun AppText(
     style : TextStyle = MaterialTheme.typography.bodyLarge,
     color : Color = MaterialTheme.colorScheme.onSurface,
     modifier : Modifier = Modifier,
+    textAlign : TextAlign = TextAlign.Center
     ){
     Text(
         text = text,
         style = style,
         color = color,
-        modifier = modifier
+        modifier = modifier,
+        textAlign = textAlign
     )
 }
