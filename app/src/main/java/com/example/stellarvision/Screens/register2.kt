@@ -189,7 +189,6 @@ fun Register2(controller: NavController)
         AppButton(
             "Crear Cuenta",
             onClick = {
-
                 Toast.makeText(context,"Cuenta creada con exito", Toast.LENGTH_LONG).show()
                 controller.navigate("login")
             },
