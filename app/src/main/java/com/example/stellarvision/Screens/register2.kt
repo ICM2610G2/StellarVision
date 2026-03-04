@@ -178,7 +178,6 @@ fun Register2(controller: NavController)
                     )
                 }
             )
-
             AppTextField(
                 securityAnswer_3,
                 { securityAnswer_3 = it },
