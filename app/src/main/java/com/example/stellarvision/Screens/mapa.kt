@@ -17,27 +17,30 @@ import com.example.stellarvision.R
 import com.example.stellarvision.ui.atoms.AppText
 import com.example.stellarvision.ui.molecules.AppHeader
 import org.w3c.dom.Text
+import com.example.stellarvision.ui.atoms.iconsNavBar
+import com.example.stellarvision.ui.templates.BottomBar
 
 @Composable
 fun Mapa(controller: NavController)
 {
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        AppHeader(
-            "Stellar Vision",
-            "Mapa",
-            R.drawable.vectorsvlogo,
-            "Mapa para ubicar constelaciones"
-        )
-        AppText(
-            "Mapa API",
-            MaterialTheme.typography.labelMedium,
-            MaterialTheme.colorScheme.onBackground
-        )
-
-        //BottomBar(controller, iconsNavBar)
+    BottomBar(controller, iconsNavBar) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            AppHeader(
+                "Stellar Vision",
+                "Mapa",
+                R.drawable.vectorsvlogo,
+                "Mapa para ubicar constelaciones"
+            )
+            AppText(
+                "Mapa API",
+                MaterialTheme.typography.labelMedium,
+                MaterialTheme.colorScheme.onBackground
+            )
+        }
     }
 }
 
