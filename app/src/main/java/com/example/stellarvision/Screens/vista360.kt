@@ -8,6 +8,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -46,6 +47,7 @@ import androidx.navigationevent.NavigationEventDispatcher
 import com.example.stellarvision.Model.Star
 import com.example.stellarvision.R
 import com.example.stellarvision.Util.getStarsFromHYG
+import com.example.stellarvision.Util.visibleStars
 import com.example.stellarvision.ui.atoms.CameraButton
 import com.example.stellarvision.ui.atoms.iconsNavBar
 import com.example.stellarvision.ui.templates.BottomBar
@@ -99,21 +101,32 @@ fun Vista360(controller: NavController) {
         verticalArrangement = Arrangement.Center
     ){
 
-        Column(modifier = Modifier.weight(1F), verticalArrangement = Arrangement.Center) {
+        Column(modifier = Modifier.weight(3F), verticalArrangement = Arrangement.Center) {
             Text("La latitud es: $latitude", fontSize = 21.sp)
             Text("La longitud es: $longitude", fontSize = 21.sp)
             Text("La altitud es: $altitude", fontSize = 21.sp)
         }
 
-        LazyColumn(modifier = Modifier.weight(1F)) {
-            items(stars) { star ->
+        LazyColumn(modifier = Modifier.weight(7F)) {
+            items(visibleStars(stars, latitude, longitude)) { star ->
                 //Text("Nombre: ${star.properName}")
-                Text(star.toString())
+                val starInfo: String = "Nombre: ${star.properName}, Magnitud: ${star.visualMagnitude}"
+                MyRow(starInfo)
             }
         }
 
     }
 
+}
+
+@Composable
+fun MyRow(text: String){
+    Row(
+        modifier = Modifier.fillMaxSize()
+    ){
+        Icon(Icons.Default.Star, "Icon", Modifier.weight(1F).align(Alignment.CenterVertically).size(18.dp))
+        Text (text, modifier = Modifier.weight(8F).align(Alignment.CenterVertically), fontSize = 18.sp)
+    }
 }
 
 @OptIn(ExperimentalPermissionsApi::class)
