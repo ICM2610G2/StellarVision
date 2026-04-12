@@ -18,6 +18,7 @@ import com.example.stellarvision.Screens.Perfil
 import com.example.stellarvision.Screens.Register1
 import com.example.stellarvision.Screens.Register2
 import com.example.stellarvision.Screens.Vista360
+import com.example.stellarvision.Screens.Vista360Screen
 import com.example.stellarvision.Screens.Vistalocalizacion
 
 enum class AppScreens {
@@ -53,7 +54,7 @@ fun Navigation(){
             Mapa(navController)
         }
         composable(AppScreens.Vista360.name) {
-            Vista360(navController)
+            Vista360Screen(navController)
         }
         composable(AppScreens.Vistalocalizacion.name) {
             Vistalocalizacion(navController)
