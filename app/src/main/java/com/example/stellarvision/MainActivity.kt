@@ -1,5 +1,7 @@
 package com.example.stellarvision
 
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,9 +17,13 @@ import androidx.navigation.Navigation
 import com.example.stellarvision.Navigation.Navigation
 import com.example.stellarvision.ui.theme.StellarVisionTheme
 
+lateinit var sensorManager: SensorManager
+
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         setContent {
                 Navigation()
         }

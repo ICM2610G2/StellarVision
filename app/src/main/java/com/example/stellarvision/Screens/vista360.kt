@@ -2,7 +2,15 @@ package com.example.stellarvision.Screens
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.hardware.Sensor
+import android.hardware.Sensor.TYPE_GYROSCOPE
+import android.hardware.Sensor.TYPE_LIGHT
+import android.hardware.Sensor.TYPE_ROTATION_VECTOR
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Looper
+import android.util.Log
 import android.view.WindowInsets
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -26,6 +34,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +57,7 @@ import com.example.stellarvision.Model.Star
 import com.example.stellarvision.R
 import com.example.stellarvision.Util.getStarsFromHYG
 import com.example.stellarvision.Util.visibleStars
+import com.example.stellarvision.sensorManager
 import com.example.stellarvision.ui.atoms.CameraButton
 import com.example.stellarvision.ui.atoms.iconsNavBar
 import com.example.stellarvision.ui.templates.BottomBar
@@ -69,6 +79,13 @@ fun Vista360(controller: NavController) {
     var stars by remember { mutableStateOf<List<Star>>(emptyList()) }
     val context = LocalContext.current
 
+    var x_rot by remember { mutableFloatStateOf(0.0F) }
+    var y_rot by remember { mutableFloatStateOf(0.0F) }
+    var z_rot by remember { mutableFloatStateOf(0.0F) }
+
+    var lightLevel by remember { mutableStateOf(0.0F)}
+
+
     val locationClient = LocationServices.getFusedLocationProviderClient(context)
     val locationRequest = createLocationRequest()
     var latitude by remember { mutableDoubleStateOf(0.0) }
@@ -79,6 +96,24 @@ fun Vista360(controller: NavController) {
             latitude = it.latitude
             longitude = it.longitude
             altitude = it.altitude
+        }
+    }
+    val lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
+    val rotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+
+    val sensorListener = object : SensorEventListener{
+        override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
+        }
+
+        override fun onSensorChanged(event: SensorEvent?) {
+            if(event?.sensor?.type == TYPE_ROTATION_VECTOR){
+                x_rot = event.values[0]
+                y_rot = event.values[1]
+                z_rot = event.values[2]
+            }
+            if(event?.sensor?.type == TYPE_LIGHT){
+                lightLevel = event.values[0]
+            }
         }
     }
 
@@ -92,7 +127,18 @@ fun Vista360(controller: NavController) {
         if(ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
             locationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
         }
-        onDispose { locationClient.removeLocationUpdates { locationCallback } }
+
+        rotationVectorSensor?.let{
+            sensorManager.registerListener(sensorListener, rotationVectorSensor, SensorManager.SENSOR_DELAY_FASTEST)
+        }
+        lightSensor?.let{
+            sensorManager.registerListener(sensorListener, lightSensor, SensorManager.SENSOR_DELAY_FASTEST)
+        }
+
+        onDispose {
+            locationClient.removeLocationUpdates { locationCallback }
+            sensorManager.unregisterListener(sensorListener)
+        }
     }
 
     Column(
@@ -101,15 +147,16 @@ fun Vista360(controller: NavController) {
         verticalArrangement = Arrangement.Center
     ){
 
-        Column(modifier = Modifier.weight(3F), verticalArrangement = Arrangement.Center) {
-            Text("La latitud es: $latitude", fontSize = 21.sp)
-            Text("La longitud es: $longitude", fontSize = 21.sp)
-            Text("La altitud es: $altitude", fontSize = 21.sp)
+        Column(modifier = Modifier.weight(3F).padding(10.dp), verticalArrangement = Arrangement.Center) {
+            Text("La latitud es: $latitude", fontSize = 20.sp)
+            Text("La longitud es: $longitude", fontSize = 20.sp)
+            Text("La altitud es: $altitude", fontSize = 20.sp)
+            Text("Los valores de vector de rotacion son x: ${x_rot}, y: ${y_rot}, z: ${z_rot} ", fontSize = 20.sp)
+            Text("El valor de luz detectado por el sensor es: ${lightLevel}", fontSize = 20.sp)
         }
 
         LazyColumn(modifier = Modifier.weight(7F)) {
-            items(visibleStars(stars, latitude, longitude)) { star ->
-                //Text("Nombre: ${star.properName}")
+            items(visibleStars(stars, latitude, longitude).sortedBy { it.visualMagnitude }) { star ->
                 val starInfo: String = "Nombre: ${star.properName}, Magnitud: ${star.visualMagnitude}"
                 MyRow(starInfo)
             }
