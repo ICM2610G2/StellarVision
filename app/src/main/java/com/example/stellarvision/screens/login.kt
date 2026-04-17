@@ -108,7 +108,7 @@ fun Login(controller: NavController, model : LoginViewModel = viewModel())
             onClick = {
                 model.login(user.email,user.password,
                     onSuccess = {controller.navigate(AppScreens.Homepage.name)},
-                    onError = {Toast.makeText(context, "Login error ${it}", Toast.LENGTH_LONG).show()}
+                    onError = {Toast.makeText(context, "Usuario o Contraseña incorrectos", Toast.LENGTH_LONG).show()}
                 )
             },
             modifier = Modifier.padding(horizontal = 16.dp)

@@ -6,6 +6,6 @@ fun validEmailAddress(email:String):Boolean{
 }
 
 fun validPassword(password: String): Boolean {
-    val regex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z\\d])[\\S]{8,}$"
+    val regex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z\\d])[\\S]{8,255}$"
     return password.matches(regex.toRegex())
 }
