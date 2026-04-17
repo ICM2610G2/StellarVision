@@ -295,7 +295,7 @@ fun AppTextField(
             focusedContainerColor = MaterialTheme.colorScheme.surface,
             unfocusedContainerColor = MaterialTheme.colorScheme.surface
         ),
-        supportingText = {Text("", color = Color.Red)}
+        supportingText = supportingText
     )
 }
 

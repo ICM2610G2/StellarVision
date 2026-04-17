@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -67,7 +68,7 @@ fun Login(controller: NavController, model : LoginViewModel = viewModel())
                      contentDescription = "Email"
                 )
             },
-           supportingText = {Text(user.emailError)}
+           supportingText = {Text(user.emailError, color = Color.Red)}
         )
         Spacer(modifier = Modifier.height(8.dp))
         AppTextField(
@@ -91,7 +92,7 @@ fun Login(controller: NavController, model : LoginViewModel = viewModel())
                     )
                 }
             },
-            supportingText = {Text(user.passwordError)}
+            supportingText = {Text(user.passwordError, color = Color.Red)}
         )
         AppText(
             "¿Olvidaste tu Contraseña?",
@@ -107,7 +108,7 @@ fun Login(controller: NavController, model : LoginViewModel = viewModel())
             onClick = {
                 model.login(user.email,user.password,
                     onSuccess = {controller.navigate(AppScreens.Homepage.name)},
-                    onError = {Toast.makeText(context, it, Toast.LENGTH_LONG).show()}
+                    onError = {Toast.makeText(context, "Login error ${it}", Toast.LENGTH_LONG).show()}
                 )
             },
             modifier = Modifier.padding(horizontal = 16.dp)
