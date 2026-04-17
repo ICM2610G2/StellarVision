@@ -29,10 +29,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.stellarvision.R
-import com.example.stellarvision.ui.atoms.AppButton
-import com.example.stellarvision.ui.atoms.AppText
-import com.example.stellarvision.ui.atoms.AppTextField
-import com.example.stellarvision.ui.molecules.AppHeader
+import com.example.stellarvision.common.AppButton
+import com.example.stellarvision.common.AppHeader
+import com.example.stellarvision.common.AppText
+import com.example.stellarvision.common.AppTextField
 
 @Composable
 fun Register2(controller: NavController)
