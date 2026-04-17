@@ -1,6 +1,4 @@
-package com.example.stellarvision.Model
-
-import androidx.compose.ui.tooling.preview.Preview
+package com.example.stellarvision.model
 
 data class NavItem(
     val id: String,
@@ -17,4 +15,13 @@ data class PostUi (
     val comments: Int,
     val previewUser: String,
     val previewText: String
+)
+
+data class LoginState(
+    val email: String = "",
+    val username : String ="",
+    val password: String = "",
+    val emailError: String = "",
+    val passwordError: String = "",
+    val usernameError : String = ""
 )

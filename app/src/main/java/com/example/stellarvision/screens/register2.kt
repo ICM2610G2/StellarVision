@@ -1,4 +1,4 @@
-package com.example.stellarvision.Screens
+package com.example.stellarvision.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement

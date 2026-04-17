@@ -59,8 +59,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.stellarvision.Model.NavItem
-import com.example.stellarvision.Navigation.AppScreens
+import com.example.stellarvision.model.NavItem
+import com.example.stellarvision.navigation.AppScreens
 import com.example.stellarvision.R
 import com.example.stellarvision.ui.theme.Gray
 import com.example.stellarvision.ui.theme.OnSurfaceVariant
@@ -264,7 +264,8 @@ fun AppTextField(
     isPassword: Boolean = false,
     allowWhitespace: Boolean = false,
     leadingIcon: @Composable (() -> Unit)? = null,
-    trailingIcon: @Composable (() -> Unit)? = null
+    trailingIcon: @Composable (() -> Unit)? = null,
+    supportingText : @Composable (() -> Unit)? = null
 ){
     OutlinedTextField(
         value = value,
@@ -293,7 +294,8 @@ fun AppTextField(
             unfocusedBorderColor = MaterialTheme.colorScheme.outline,
             focusedContainerColor = MaterialTheme.colorScheme.surface,
             unfocusedContainerColor = MaterialTheme.colorScheme.surface
-        )
+        ),
+        supportingText = {Text("", color = Color.Red)}
     )
 }
 
