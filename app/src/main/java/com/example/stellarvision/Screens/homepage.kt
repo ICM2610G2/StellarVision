@@ -9,21 +9,18 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.stellarvision.ui.atoms.iconsNavBar
-import com.example.stellarvision.ui.molecules.HomeTopTabs
-import com.example.stellarvision.ui.templates.BottomBar
-import com.example.stellarvision.ui.templates.PostCard
-
+import com.example.stellarvision.common.BottomBar
+import com.example.stellarvision.common.HomeTopTabs
+import com.example.stellarvision.common.PostCard
+import com.example.stellarvision.common.iconsNavBar
 
 @Composable
 fun Homepage(controller: NavController) {
     BottomBar(controller, iconsNavBar) { padding ->
         var selected by rememberSaveable { mutableIntStateOf(1) }
-
         Column(
             modifier = Modifier.padding(padding).fillMaxSize()
         ) {
@@ -32,7 +29,6 @@ fun Homepage(controller: NavController) {
                 modifier = Modifier,
                 onSelect = {selected=it}
             )
-
             PostCard(
                 userName = "Helena",
                 groupText = "Hace 5 minutos",
