@@ -6,4 +6,5 @@ class AuthRepository(
     private val firebase : FirebaseAuthDataSource = FirebaseAuthDataSource()
 ){
     fun login(email : String, password : String) = firebase.login(email, password)
+    fun register(email : String, password : String) = firebase.register(email, password)
 }

@@ -19,9 +19,18 @@ data class PostUi (
 
 data class LoginState(
     val email: String = "",
-    val username : String ="",
     val password: String = "",
     val emailError: String = "",
-    val passwordError: String = "",
-    val usernameError : String = ""
+    val passwordError: String = ""
+)
+
+data class RegisterState(
+    val email : String = "",
+    val password : String = "",
+    val username : String = "",
+    val confirmPassword : String = "",
+    val emailError : String = "",
+    val passwordError : String = "",
+    val usernameError : String = "",
+    val confirmPasswordError : String = ""
 )
