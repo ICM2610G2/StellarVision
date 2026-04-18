@@ -19,9 +19,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.stellarvision.R
-import com.example.stellarvision.ui.molecules.AppHeader
-import com.example.stellarvision.ui.atoms.AppText
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
@@ -37,8 +34,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.background
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.Color
-import com.example.stellarvision.ui.templates.BottomBar
-import com.example.stellarvision.ui.atoms.iconsNavBar
+import com.example.stellarvision.common.AppText
+import com.example.stellarvision.common.BottomBar
+import com.example.stellarvision.common.iconsNavBar
 
 @Composable
 fun Perfil(controller: NavController)

@@ -8,11 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MailOutline
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -21,18 +18,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.stellarvision.R
-import com.example.stellarvision.ui.atoms.AppButton
-import com.example.stellarvision.ui.atoms.AppSeparator
-import com.example.stellarvision.ui.atoms.AppText
-import com.example.stellarvision.ui.atoms.AppTextField
-import com.example.stellarvision.ui.molecules.AppHeader
-import com.example.stellarvision.ui.molecules.SocialButtons
+import com.example.stellarvision.common.AppButton
+import com.example.stellarvision.common.AppHeader
+import com.example.stellarvision.common.AppSeparator
+import com.example.stellarvision.common.AppText
+import com.example.stellarvision.common.AppTextField
+import com.example.stellarvision.common.SocialButtons
 
 @Composable
 fun Register1(controller: NavController)
