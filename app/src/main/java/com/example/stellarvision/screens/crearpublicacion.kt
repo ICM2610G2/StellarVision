@@ -1,5 +1,6 @@
 package com.example.stellarvision.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -209,11 +210,29 @@ fun CrearPublicacion(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             listOf("EXACTA", "PARCIAL", "NINGUNA").forEach { opcion ->
-                AppButton(
-                    text = opcion,
-                    onClick = { privacidadUbicacion = opcion },
-                    modifier = Modifier.weight(1f)
-                )
+                ElevatedCard(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable { privacidadUbicacion = opcion },
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        AppText(
+                            text = if (privacidadUbicacion == opcion) "✓ $opcion" else opcion,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = if (privacidadUbicacion == opcion)
+                                MaterialTheme.colorScheme.primary
+                            else
+                                MaterialTheme.colorScheme.onBackground
+                        )
+                    }
+                }
             }
         }
 
