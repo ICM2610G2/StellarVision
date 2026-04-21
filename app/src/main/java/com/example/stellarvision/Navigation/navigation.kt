@@ -1,19 +1,14 @@
 package com.example.stellarvision.Navigation
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.stellarvision.Model.NavItem
-import com.example.stellarvision.R
 import com.example.stellarvision.Screens.Actividad
 import com.example.stellarvision.Screens.Homepage
 import com.example.stellarvision.Screens.Login
-import com.example.stellarvision.Screens.Mapa
+import com.example.stellarvision.Screens.Maps.Mapa
+import com.example.stellarvision.Screens.Maps.PointerDetail
 import com.example.stellarvision.Screens.Perfil
 import com.example.stellarvision.Screens.Register1
 import com.example.stellarvision.Screens.Register2
@@ -63,6 +58,11 @@ fun Navigation(){
         }
         composable(AppScreens.Perfil.name) {
             Perfil(navController)
+        }
+
+        composable("poi/{id}") { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id") ?: return@composable
+            PointerDetail(navController, poiId = id)
         }
     }
 }
