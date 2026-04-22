@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.InsertComment
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.FavoriteBorder
@@ -87,7 +88,7 @@ val iconsNavBar = listOf(
     NavItem("home", R.drawable.home_icon, "Home", AppScreens.Homepage.name),
     NavItem("map", R.drawable.map_icon, "Map", AppScreens.Mapa.name),
     NavItem("camera", R.drawable.camera_icon, "Camera", AppScreens.Vista360.name),
-    NavItem("bell", R.drawable.bell_icon, "Notifications", AppScreens.Actividad.name),
+    NavItem("bell", R.drawable.chat_icon, "Messages", AppScreens.Mensajeria.name),
     NavItem("user", R.drawable.person_icon, "Profile", AppScreens.Perfil.name)
 )
 

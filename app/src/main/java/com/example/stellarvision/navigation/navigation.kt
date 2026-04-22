@@ -7,11 +7,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.stellarvision.screens.Actividad
 import com.example.stellarvision.screens.CrearPublicacion
 import com.example.stellarvision.screens.Homepage
 import com.example.stellarvision.screens.Login
 import com.example.stellarvision.screens.Mapa
+import com.example.stellarvision.screens.Mensajeria
 import com.example.stellarvision.screens.Perfil
 import com.example.stellarvision.screens.Register1
 import com.example.stellarvision.screens.Register2
@@ -28,7 +28,7 @@ enum class AppScreens {
     Mapa,
     Vista360,
     Vistalocalizacion,
-    Actividad,
+    Mensajeria,
     Perfil,
 
     Crearpublicacion
@@ -69,8 +69,8 @@ fun Navigation(){
         composable(AppScreens.Vistalocalizacion.name) {
             Vistalocalizacion(navController)
         }
-        composable(AppScreens.Actividad.name) {
-            Actividad(navController)
+        composable(AppScreens.Mensajeria.name) {
+            Mensajeria(navController)
         }
         composable(AppScreens.Perfil.name) {
             Perfil(navController)
