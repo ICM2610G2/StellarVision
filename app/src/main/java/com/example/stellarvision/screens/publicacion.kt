@@ -50,7 +50,7 @@ import java.io.File
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun Vista360(controller: NavController) {
+fun Publicacion(controller: NavController) {
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var pendingCameraUri by remember { mutableStateOf<Uri?>(null) }
 
