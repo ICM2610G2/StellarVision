@@ -21,13 +21,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.InsertComment
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.MailOutline
+import androidx.compose.material.icons.outlined.Route
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFloatingActionButton
@@ -87,7 +90,7 @@ val iconsNavBar = listOf(
     NavItem("home", R.drawable.home_icon, "Home", AppScreens.Homepage.name),
     NavItem("map", R.drawable.map_icon, "Map", AppScreens.Mapa.name),
     NavItem("camera", R.drawable.camera_icon, "Camera", AppScreens.Vista360.name),
-    NavItem("bell", R.drawable.bell_icon, "Notifications", AppScreens.Actividad.name),
+    NavItem("bell", R.drawable.chat_icon, "Messages", AppScreens.Mensajeria.name),
     NavItem("user", R.drawable.person_icon, "Profile", AppScreens.Perfil.name)
 )
 
@@ -264,7 +267,8 @@ fun AppTextField(
     isPassword: Boolean = false,
     allowWhitespace: Boolean = false,
     leadingIcon: @Composable (() -> Unit)? = null,
-    trailingIcon: @Composable (() -> Unit)? = null
+    trailingIcon: @Composable (() -> Unit)? = null,
+    supportingText : @Composable (() -> Unit)? = null
 ){
     OutlinedTextField(
         value = value,
@@ -293,7 +297,8 @@ fun AppTextField(
             unfocusedBorderColor = MaterialTheme.colorScheme.outline,
             focusedContainerColor = MaterialTheme.colorScheme.surface,
             unfocusedContainerColor = MaterialTheme.colorScheme.surface
-        )
+        ),
+        supportingText = supportingText
     )
 }
 
@@ -645,6 +650,24 @@ fun PostCard(
     }
 }
 
-
+@Composable
+fun AppFab(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    tint: Color = Primary,
+    contentDescription: String = "Accion",
+    icon: ImageVector= Icons.Outlined.Route
+) {
+    FloatingActionButton(
+        onClick = onClick,
+        modifier = modifier
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = contentDescription,
+            tint = tint
+        )
+    }
+}
 
 
