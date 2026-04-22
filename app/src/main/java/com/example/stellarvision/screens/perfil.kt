@@ -1,17 +1,13 @@
 package com.example.stellarvision.screens
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
-import androidx.compose.material3.ElevatedCard
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,31 +15,24 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.foundation.layout.size
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.draw.clip
-import androidx.compose.foundation.background
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.Color
-import com.example.stellarvision.common.AppText
-import com.example.stellarvision.common.BottomBar
-import com.example.stellarvision.common.iconsNavBar
+import com.example.stellarvision.common.*
+import com.example.stellarvision.navigation.AppScreens
+import com.example.stellarvision.viewmodel.LoginViewModel
 
 @Composable
 fun Perfil(controller: NavController)
 {
+    val loginViewModel: LoginViewModel = viewModel()
+
     BottomBar(controller, iconsNavBar) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(16.dp).statusBarsPadding(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .statusBarsPadding(),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
@@ -77,16 +66,11 @@ fun Perfil(controller: NavController)
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 ElevatedCard(
-                    modifier = Modifier.weight(1f)
-                        .height(60.dp)
-                        .clickable {
-                            //Evento
-                        },
+                    modifier = Modifier.weight(1f).height(60.dp).clickable { },
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxSize()
-                            .padding(horizontal = 12.dp),
+                        modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
@@ -96,18 +80,11 @@ fun Perfil(controller: NavController)
                     }
                 }
                 ElevatedCard(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(60.dp)
-                        .clickable {
-                            //Evento
-                        },
+                    modifier = Modifier.weight(1f).height(60.dp).clickable { },
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 12.dp),
+                        modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
@@ -123,20 +100,12 @@ fun Perfil(controller: NavController)
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-
                 ElevatedCard(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(60.dp)
-                        .clickable {
-                            //Evento
-                        },
+                    modifier = Modifier.weight(1f).height(60.dp).clickable { },
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 12.dp),
+                        modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
@@ -147,18 +116,11 @@ fun Perfil(controller: NavController)
                 }
 
                 ElevatedCard(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(60.dp)
-                        .clickable {
-                            //Evento
-                        },
+                    modifier = Modifier.weight(1f).height(60.dp).clickable { },
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 12.dp),
+                        modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
@@ -166,6 +128,33 @@ fun Perfil(controller: NavController)
                         Spacer(Modifier.width(8.dp))
                         AppText("Notificaciones")
                     }
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            ElevatedCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+                    .clickable {
+                        loginViewModel.logout()
+                        controller.navigate(AppScreens.Login.name) {
+                            popUpTo(AppScreens.Homepage.name) { inclusive = true }
+                        }
+                    },
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(Icons.Default.ExitToApp, contentDescription = "Logout")
+                    Spacer(Modifier.width(8.dp))
+                    AppText("Cerrar sesión")
                 }
             }
 

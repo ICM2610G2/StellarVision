@@ -68,5 +68,13 @@ class LoginViewModel: ViewModel() {
                 }
             }
     }
+
+    fun isUserLoggedIn(): Boolean {
+        return repository.getCurrentUser() != null
+    }
+
+    fun logout() {
+        repository.logout()
+    }
 }
 

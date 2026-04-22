@@ -2,6 +2,7 @@ package com.example.stellarvision.navigation
 
 import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -15,6 +16,7 @@ import com.example.stellarvision.screens.Register1
 import com.example.stellarvision.screens.Register2
 import com.example.stellarvision.screens.Vista360
 import com.example.stellarvision.screens.Vistalocalizacion
+import com.example.stellarvision.viewmodel.LoginViewModel
 import com.example.stellarvision.viewmodel.RegisterViewModel
 
 enum class AppScreens {
@@ -33,7 +35,15 @@ enum class AppScreens {
 fun Navigation(){
     val navController = rememberNavController()
     val registerViewModel: RegisterViewModel = viewModel()
+    val loginViewModel: LoginViewModel = viewModel()
 
+    LaunchedEffect(Unit) {
+        if (loginViewModel.isUserLoggedIn()) {
+            navController.navigate(AppScreens.Homepage.name) {
+                popUpTo(AppScreens.Login.name) { inclusive = true }
+            }
+        }
+    }
     NavHost(navController, AppScreens.Login.name) {
         composable(AppScreens.Login.name) {
             Login(navController)
