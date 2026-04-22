@@ -1,16 +1,16 @@
 package com.example.stellarvision.navigation
 
-import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.stellarvision.screens.Mapa
+import com.example.stellarvision.screens.PointerDetail
 import com.example.stellarvision.screens.CrearPublicacion
 import com.example.stellarvision.screens.Homepage
 import com.example.stellarvision.screens.Login
-import com.example.stellarvision.screens.Mapa
 import com.example.stellarvision.screens.Mensajeria
 import com.example.stellarvision.screens.Perfil
 import com.example.stellarvision.screens.Register1
@@ -77,6 +77,10 @@ fun Navigation(){
         }
         composable(AppScreens.Crearpublicacion.name) {
             CrearPublicacion(navController)
+        }
+        composable("poi/{id}") { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id") ?: return@composable
+            PointerDetail(navController, poiId = id)
         }
     }
 }

@@ -10,6 +10,7 @@ import com.example.stellarvision.navigation.Navigation
 import com.example.stellarvision.ui.theme.StellarVisionTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import org.osmdroid.config.Configuration
 
 
 lateinit var auth : FirebaseAuth
@@ -19,6 +20,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         auth = FirebaseAuth.getInstance()
        database = FirebaseDatabase.getInstance()
+        Configuration.getInstance().userAgentValue = packageName
         setContent {
             StellarVisionTheme() {
                 Navigation()
