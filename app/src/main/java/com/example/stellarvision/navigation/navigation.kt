@@ -13,9 +13,10 @@ import com.example.stellarvision.screens.Homepage
 import com.example.stellarvision.screens.Login
 import com.example.stellarvision.screens.Mensajeria
 import com.example.stellarvision.screens.Perfil
+import com.example.stellarvision.screens.Publicacion
 import com.example.stellarvision.screens.Register1
 import com.example.stellarvision.screens.Register2
-import com.example.stellarvision.screens.Vista360
+import com.example.stellarvision.screens.Vista360Screen
 import com.example.stellarvision.screens.Vistalocalizacion
 import com.example.stellarvision.viewmodel.LoginViewModel
 import com.example.stellarvision.viewmodel.RegisterViewModel
@@ -27,6 +28,7 @@ enum class AppScreens {
     Homepage,
     Mapa,
     Vista360,
+    Publicacion,
     Vistalocalizacion,
     Mensajeria,
     Perfil,
@@ -63,14 +65,17 @@ fun Navigation(){
         composable(AppScreens.Mapa.name) {
             Mapa(navController)
         }
-        composable(AppScreens.Vista360.name) {
-            Vista360(navController)
+        composable(AppScreens.Publicacion.name) {
+            Publicacion(navController)
         }
         composable(AppScreens.Vistalocalizacion.name) {
             Vistalocalizacion(navController)
         }
         composable(AppScreens.Mensajeria.name) {
             Mensajeria(navController)
+        }
+        composable(AppScreens.Vista360.name){
+            Vista360Screen(navController)
         }
         composable(AppScreens.Perfil.name) {
             Perfil(navController)
