@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -21,19 +22,22 @@ import androidx.compose.ui.graphics.Color
 import com.example.stellarvision.common.*
 import com.example.stellarvision.navigation.AppScreens
 import com.example.stellarvision.viewmodel.LoginViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun Perfil(controller: NavController)
 {
     val loginViewModel: LoginViewModel = viewModel()
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    val nombreUsuario = currentUser?.email?.substringBefore("@") ?: "Usuario"
 
-    BottomBar(controller, iconsNavBar) {
+    BottomBar(controller, iconsNavBar) {padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
-                .statusBarsPadding(),
-            verticalArrangement = Arrangement.Top,
+                .padding(padding)
+                .padding(horizontal = 20.dp, vertical = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.Start
         ) {
             Row(
@@ -42,7 +46,7 @@ fun Perfil(controller: NavController)
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 AppText(
-                    text = "Esteban Navas",
+                    text = nombreUsuario,
                     style = MaterialTheme.typography.headlineLarge
                 )
 
@@ -66,11 +70,16 @@ fun Perfil(controller: NavController)
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 ElevatedCard(
-                    modifier = Modifier.weight(1f).height(60.dp).clickable { },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(60.dp)
+                        .clickable { },
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
@@ -80,11 +89,16 @@ fun Perfil(controller: NavController)
                     }
                 }
                 ElevatedCard(
-                    modifier = Modifier.weight(1f).height(60.dp).clickable { },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(60.dp)
+                        .clickable { },
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
@@ -101,7 +115,10 @@ fun Perfil(controller: NavController)
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 ElevatedCard(
-                    modifier = Modifier.weight(1f).height(60.dp).clickable { },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(60.dp)
+                        .clickable { },
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Row(
@@ -116,7 +133,10 @@ fun Perfil(controller: NavController)
                 }
 
                 ElevatedCard(
-                    modifier = Modifier.weight(1f).height(60.dp).clickable { },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(60.dp)
+                        .clickable { },
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Row(
