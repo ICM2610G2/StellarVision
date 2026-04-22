@@ -2,6 +2,7 @@ package com.example.stellarvision.screens
 
 import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -14,6 +15,8 @@ import android.hardware.SensorManager
 import android.location.Geocoder
 import android.location.Location
 import android.os.Looper
+import com.example.stellarvision.common.createLocationCallback
+import com.example.stellarvision.common.createLocationRequest
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -67,7 +70,7 @@ import java.util.Locale
 import androidx.compose.ui.unit.dp
 import com.example.stellarvision.viewmodel.MapViewModel
 
-private const val DARK_LUX_THRESHOLD = 2000f
+private const val DARK_LUX_THRESHOLD = 200f
 
 private val LIGHT_TILE_SOURCE = XYTileSource(
     "CartoLight",
@@ -165,7 +168,7 @@ private fun MostrarMapa(
     }
 
     val locationCallback = remember {
-        createLocationCallback { result ->
+        createLocationCallback { result: LocationResult ->
             result.lastLocation?.let { loc ->
                 model.updateUserPoint(GeoPoint(loc.latitude, loc.longitude))
             }
@@ -182,11 +185,10 @@ private fun MostrarMapa(
     }
 
     DisposableEffect(Unit) {
-        locationClient.requestLocationUpdates(
-            locationRequest,
-            locationCallback,
-            Looper.getMainLooper()
-        )
+
+        if(ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+            locationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+        }
 
         lightSensor?.let {
             sensorManager.registerListener(
@@ -408,22 +410,6 @@ fun formatDistance(distanceMeters: Double): String {
         "${distanceMeters.toInt()} m"
     } else {
         String.format(Locale.getDefault(), "%.2f km", distanceMeters / 1000.0)
-    }
-}
-
-fun createLocationRequest(): LocationRequest {
-    return LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 5000)
-        .setMinUpdateIntervalMillis(2500)
-        .build()
-}
-
-fun createLocationCallback(
-    onLocation: (LocationResult) -> Unit
-): LocationCallback {
-    return object : LocationCallback() {
-        override fun onLocationResult(locationResult: LocationResult) {
-            onLocation(locationResult)
-        }
     }
 }
 

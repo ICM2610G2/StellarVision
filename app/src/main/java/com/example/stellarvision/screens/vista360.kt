@@ -54,6 +54,8 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.example.stellarvision.model.Star
 import com.example.stellarvision.R
+import com.example.stellarvision.common.createLocationCallback
+import com.example.stellarvision.common.createLocationRequest
 import com.example.stellarvision.common.getStarsFromHYG
 import com.example.stellarvision.common.visibleStars
 import com.example.stellarvision.sensorManager
@@ -357,25 +359,6 @@ fun Vista360Screen(controller: NavController){
             }
         }
     }
-}
-
-fun createLocationRequest(): LocationRequest {
-    val locationRequest = LocationRequest.Builder(
-        Priority.PRIORITY_HIGH_ACCURACY, 10000)
-        .setWaitForAccurateLocation(true)
-        .setMinUpdateIntervalMillis(5000)
-        .build()
-    return locationRequest
-}
-
-fun createLocationCallback(onLocationChange: (LocationResult)->Unit): LocationCallback {
-    val locationCallback = object: LocationCallback(){
-        override fun onLocationResult(locationResult: LocationResult){
-            super.onLocationResult(locationResult)
-            onLocationChange(locationResult)
-        }
-    }
-    return locationCallback
 }
 
 
