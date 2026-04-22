@@ -1,4 +1,5 @@
-package com.example.stellarvision.Screens
+package com.example.stellarvision.screens
+
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,31 +13,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.stellarvision.common.ActivityTopRow
 import com.example.stellarvision.common.BottomBar
-import com.example.stellarvision.common.HomeTopTabs
-import com.example.stellarvision.common.PostCard
+import com.example.stellarvision.common.NotificationCard
 import com.example.stellarvision.common.iconsNavBar
 
 @Composable
-fun Homepage(controller: NavController) {
+fun Actividad(controller: NavController)
+{
     BottomBar(controller, iconsNavBar) { padding ->
         var selected by rememberSaveable { mutableIntStateOf(1) }
         Column(
             modifier = Modifier.padding(padding).fillMaxSize()
         ) {
-            HomeTopTabs(
+            ActivityTopRow(
                 selectedIndex = selected,
                 modifier = Modifier,
                 onSelect = {selected=it}
             )
-            PostCard(
-                userName = "Helena",
-                groupText = "Hace 5 minutos",
-                body = "Hoy en la noche tome una foto de la constelacion Orion. Me encanta como se ven las constelaciones con esta aplicacion!",
-                likes= 8,
-                comments = 1,
-                previewUser = "Daniel",
-                previewText = "Se ve bastante bien, desde que lugar la tomaste?"
+            NotificationCard(
+                userName = "Felipe",
+                groupText = "Hace 1 dia",
+                body = "Le dio like a tu post"
             )
         }
     }
@@ -44,6 +42,6 @@ fun Homepage(controller: NavController) {
 
 @Preview(showBackground = true)
 @Composable
-fun HomepagePreview() {
-    Homepage(controller = rememberNavController())
+fun ActividadPreview() {
+    Actividad(controller = rememberNavController())
 }

@@ -1,4 +1,4 @@
-package com.example.stellarvision.Screens
+package com.example.stellarvision.screens
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
