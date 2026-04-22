@@ -1,4 +1,4 @@
-package com.example.stellarvision.Screens
+package com.example.stellarvision.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column

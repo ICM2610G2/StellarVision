@@ -1,6 +1,4 @@
-package com.example.stellarvision.Model
-
-import androidx.compose.ui.tooling.preview.Preview
+package com.example.stellarvision.model
 
 data class NavItem(
     val id: String,

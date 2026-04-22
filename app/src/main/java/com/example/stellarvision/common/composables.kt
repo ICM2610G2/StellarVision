@@ -59,8 +59,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.stellarvision.Model.NavItem
-import com.example.stellarvision.Navigation.AppScreens
+import com.example.stellarvision.model.NavItem
+import com.example.stellarvision.navigation.AppScreens
 import com.example.stellarvision.R
 import com.example.stellarvision.ui.theme.Gray
 import com.example.stellarvision.ui.theme.OnSurfaceVariant

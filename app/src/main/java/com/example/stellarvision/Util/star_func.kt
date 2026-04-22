@@ -1,7 +1,7 @@
 package com.example.stellarvision.Util
 
 import android.content.Context
-import com.example.stellarvision.Model.Star
+import com.example.stellarvision.model.Star
 import com.example.stellarvision.R
 import kotlin.collections.filter
 import kotlin.math.abs

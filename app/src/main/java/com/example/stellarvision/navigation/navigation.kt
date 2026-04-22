@@ -1,25 +1,18 @@
-package com.example.stellarvision.Navigation
+package com.example.stellarvision.navigation
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.stellarvision.Model.NavItem
-import com.example.stellarvision.R
-import com.example.stellarvision.Screens.Actividad
-import com.example.stellarvision.Screens.Homepage
-import com.example.stellarvision.Screens.Login
-import com.example.stellarvision.Screens.Mapa
-import com.example.stellarvision.Screens.Perfil
-import com.example.stellarvision.Screens.Register1
-import com.example.stellarvision.Screens.Register2
-import com.example.stellarvision.Screens.Vista360
-import com.example.stellarvision.Screens.Vista360Screen
-import com.example.stellarvision.Screens.Vistalocalizacion
+import com.example.stellarvision.screens.Actividad
+import com.example.stellarvision.screens.Homepage
+import com.example.stellarvision.screens.Login
+import com.example.stellarvision.screens.Mapa
+import com.example.stellarvision.screens.Perfil
+import com.example.stellarvision.screens.Register1
+import com.example.stellarvision.screens.Register2
+import com.example.stellarvision.screens.Vista360Screen
+import com.example.stellarvision.screens.Vistalocalizacion
 
 enum class AppScreens {
    Login,

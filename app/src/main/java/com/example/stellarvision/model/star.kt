@@ -1,7 +1,4 @@
-package com.example.stellarvision.Model
-
-import android.content.Context
-import com.example.stellarvision.R
+package com.example.stellarvision.model
 
 data class Star(
     val id: String,
