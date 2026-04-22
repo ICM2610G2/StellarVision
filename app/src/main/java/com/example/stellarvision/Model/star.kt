@@ -9,6 +9,9 @@ data class Star(
     val rightAscension: Double?,
     val declination: Double?,
     val visualMagnitude: Double?,
-    val colorIndex: Double?
+    val colorIndex: Double?,
+    val constelation: String? = "",
+    val distance: Double?,
+    val luminosity: Double?
 )
 

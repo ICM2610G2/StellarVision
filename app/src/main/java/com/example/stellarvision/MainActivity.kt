@@ -19,7 +19,6 @@ import com.example.stellarvision.ui.theme.StellarVisionTheme
 
 lateinit var sensorManager: SensorManager
 
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

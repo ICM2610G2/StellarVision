@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.Sensor.TYPE_GYROSCOPE
 import android.hardware.Sensor.TYPE_LIGHT
+import android.hardware.Sensor.TYPE_PRESSURE
 import android.hardware.Sensor.TYPE_ROTATION_VECTOR
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -17,16 +18,21 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -42,10 +48,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,9 +68,6 @@ import com.example.stellarvision.R
 import com.example.stellarvision.Util.getStarsFromHYG
 import com.example.stellarvision.Util.visibleStars
 import com.example.stellarvision.sensorManager
-import com.example.stellarvision.ui.atoms.CameraButton
-import com.example.stellarvision.ui.atoms.iconsNavBar
-import com.example.stellarvision.ui.templates.BottomBar
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -73,7 +80,16 @@ import kotlin.collections.emptyList
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.Priority
+import java.nio.file.WatchEvent
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.util.TimeZone
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
+
+@OptIn(ExperimentalTime::class)
 @Composable
 fun Vista360(controller: NavController) {
     var stars by remember { mutableStateOf<List<Star>>(emptyList()) }
@@ -83,8 +99,18 @@ fun Vista360(controller: NavController) {
     var y_rot by remember { mutableFloatStateOf(0.0F) }
     var z_rot by remember { mutableFloatStateOf(0.0F) }
 
-    var lightLevel by remember { mutableStateOf(0.0F)}
+    var azimuth by remember { mutableFloatStateOf(0.0F) }
+    var pitch by remember { mutableFloatStateOf(0.0F) }
+    var roll by remember { mutableFloatStateOf(0.0F) }
 
+    var newAltitude by remember { mutableFloatStateOf(0.0F) }
+    var testPressure by remember { mutableFloatStateOf(760.0F) }
+    newAltitude = SensorManager.getAltitude(SensorManager.PRESSURE_STANDARD_ATMOSPHERE, testPressure)
+
+    var lightLevel by remember { mutableStateOf(0.0F)}
+    var tieneSensor by remember { mutableStateOf(false)}
+
+    val now = Clock.System.now()
 
     val locationClient = LocationServices.getFusedLocationProviderClient(context)
     val locationRequest = createLocationRequest()
@@ -100,6 +126,15 @@ fun Vista360(controller: NavController) {
     }
     val lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
     val rotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+    val pressureSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE)
+
+    if (pressureSensor == null) {
+        Log.e("SensorsLog", "This device has no Barometer hardware.")
+        tieneSensor = false
+    }else{
+        Log.e("SensorsLog", "This device has Barometer hardware.")
+        tieneSensor = true
+    }
 
     val sensorListener = object : SensorEventListener{
         override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
@@ -110,6 +145,28 @@ fun Vista360(controller: NavController) {
                 x_rot = event.values[0]
                 y_rot = event.values[1]
                 z_rot = event.values[2]
+                val tempAzimuth: Float
+
+                val rotationMatrix = FloatArray(9)
+                val remappedMatrix = FloatArray(9)
+                val orientationAngles = FloatArray(3)
+
+                SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
+                SensorManager.remapCoordinateSystem(rotationMatrix, SensorManager.AXIS_X,
+                    SensorManager.AXIS_Y, remappedMatrix)
+                SensorManager.getOrientation(remappedMatrix, orientationAngles)
+
+                tempAzimuth = Math.toDegrees(orientationAngles[0].toDouble()).toFloat()
+
+                azimuth = (tempAzimuth + 360) % 360
+                pitch = Math.toDegrees(orientationAngles[1].toDouble()).toFloat()
+                roll = Math.toDegrees(orientationAngles[2].toDouble()).toFloat()
+            }
+            if(event?.sensor?.type == TYPE_PRESSURE){
+                if(tieneSensor){
+                    testPressure = event.values[0]
+                }
+                newAltitude = SensorManager.getAltitude(SensorManager.PRESSURE_STANDARD_ATMOSPHERE, testPressure)
             }
             if(event?.sensor?.type == TYPE_LIGHT){
                 lightLevel = event.values[0]
@@ -134,6 +191,9 @@ fun Vista360(controller: NavController) {
         lightSensor?.let{
             sensorManager.registerListener(sensorListener, lightSensor, SensorManager.SENSOR_DELAY_FASTEST)
         }
+        pressureSensor?.let{
+            sensorManager.registerListener(sensorListener, pressureSensor, SensorManager.SENSOR_DELAY_NORMAL)
+        }
 
         onDispose {
             locationClient.removeLocationUpdates { locationCallback }
@@ -147,15 +207,21 @@ fun Vista360(controller: NavController) {
         verticalArrangement = Arrangement.Center
     ){
 
-        Column(modifier = Modifier.weight(3F).padding(10.dp), verticalArrangement = Arrangement.Center) {
-            Text("La latitud es: $latitude", fontSize = 20.sp)
+        Column(modifier = Modifier.weight(3F).padding(10.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+            /*Text("La latitud es: $latitude", fontSize = 20.sp)
             Text("La longitud es: $longitude", fontSize = 20.sp)
-            Text("La altitud es: $altitude", fontSize = 20.sp)
-            Text("Los valores de vector de rotacion son x: ${x_rot}, y: ${y_rot}, z: ${z_rot} ", fontSize = 20.sp)
+            Text("Altitudes: $altitude, $newAltitude", fontSize = 20.sp)
+            //Text("Los valores de vector de rotacion son x: ${x_rot}, y: ${y_rot}, z: ${z_rot} ", fontSize = 20.sp)
+            Text("Azimuth: $azimuth, Pitch: $pitch, Roll: $roll", fontSize = 20.sp)
+            Text("Fecha y hora: $now", fontSize = 20.sp)
             Text("El valor de luz detectado por el sensor es: ${lightLevel}", fontSize = 20.sp)
+            Text("Test presion atmos: $testPressure ($tieneSensor)", fontSize = 20.sp)*/
+
+            Compass(azimuth)
+
         }
 
-        LazyColumn(modifier = Modifier.weight(7F)) {
+        LazyColumn(modifier = Modifier.weight(6F)) {
             items(visibleStars(stars, latitude, longitude).sortedBy { it.visualMagnitude }) { star ->
                 val starInfo: String = "Nombre: ${star.properName}, Magnitud: ${star.visualMagnitude}"
                 MyRow(starInfo)
@@ -164,6 +230,63 @@ fun Vista360(controller: NavController) {
 
     }
 
+}
+
+@Composable
+fun Compass(azimuth: Float){
+    Box(
+        modifier = Modifier.size(100.dp),
+        contentAlignment = Alignment.Center
+    ){
+        Icon(
+            painter = painterResource(R.drawable.circle),
+            contentDescription = "Circulo brujula",
+            modifier = Modifier.fillMaxSize(),
+            tint = MaterialTheme.colorScheme.outline
+        )
+
+        Icon(
+            painter = painterResource(R.drawable.north_arrow),
+            contentDescription = "Indicador del Norte",
+            modifier = Modifier.size(64.dp).rotate(-azimuth),
+            tint = Color.Red
+        )
+
+    }
+
+    CompassText(azimuth)
+}
+
+@Composable
+fun CompassText(azimuth: Float){
+    val direction = getCardinalDirection(azimuth)
+    val degrees = azimuth.toInt()
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+
+        Text(
+            text = "$degrees",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = direction,
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.primary
+        )
+    }
+
+}
+
+fun getCardinalDirection(azimuth: Float): String{
+    val directions = listOf("N", "NE", "E", "SE", "S", "SW", "W", "NW")
+    val index = ((azimuth + 45/2) % 360 / 45).toInt()
+    return directions[index]
 }
 
 @Composable

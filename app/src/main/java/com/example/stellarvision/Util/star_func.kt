@@ -20,8 +20,11 @@ fun getStarsFromHYG(context: Context): List<Star> {
                 properName = columns.getOrNull(6) ?: "",
                 rightAscension = columns.getOrNull(7) ?.toDoubleOrNull(),
                 declination = columns.getOrNull(8) ?.toDoubleOrNull(),
+                distance = columns.getOrNull(9)?.toDoubleOrNull(),
                 visualMagnitude = columns.getOrNull(13) ?.toDoubleOrNull(),
-                colorIndex = columns.getOrNull(16) ?.toDoubleOrNull()
+                colorIndex = columns.getOrNull(16) ?.toDoubleOrNull(),
+                constelation = columns.getOrNull(29) ?: "",
+                luminosity = columns.getOrNull(33) ?.toDoubleOrNull()
             )
             starObjects.add(star)
         }
