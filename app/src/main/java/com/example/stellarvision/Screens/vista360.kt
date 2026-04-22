@@ -28,17 +28,21 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.internal.composableLambdaInstance
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -50,6 +54,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -85,6 +90,7 @@ import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.TimeZone
+import kotlin.math.abs
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -93,6 +99,7 @@ import kotlin.time.ExperimentalTime
 @Composable
 fun Vista360(controller: NavController) {
     var stars by remember { mutableStateOf<List<Star>>(emptyList()) }
+    var visibleStars by remember { mutableStateOf<List<Star>>(emptyList())}
     val context = LocalContext.current
 
     var x_rot by remember { mutableFloatStateOf(0.0F) }
@@ -100,12 +107,15 @@ fun Vista360(controller: NavController) {
     var z_rot by remember { mutableFloatStateOf(0.0F) }
 
     var azimuth by remember { mutableFloatStateOf(0.0F) }
+    var lastAzimuth by remember { mutableFloatStateOf(0.0F) }
     var pitch by remember { mutableFloatStateOf(0.0F) }
+    var lastPitch by remember { mutableFloatStateOf(0.0F) }
     var roll by remember { mutableFloatStateOf(0.0F) }
 
     var newAltitude by remember { mutableFloatStateOf(0.0F) }
-    var testPressure by remember { mutableFloatStateOf(760.0F) }
-    newAltitude = SensorManager.getAltitude(SensorManager.PRESSURE_STANDARD_ATMOSPHERE, testPressure)
+    var pressure by remember { mutableFloatStateOf(760.0F) }
+
+    newAltitude = SensorManager.getAltitude(SensorManager.PRESSURE_STANDARD_ATMOSPHERE, pressure)
 
     var lightLevel by remember { mutableStateOf(0.0F)}
     var tieneSensor by remember { mutableStateOf(false)}
@@ -153,20 +163,25 @@ fun Vista360(controller: NavController) {
 
                 SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
                 SensorManager.remapCoordinateSystem(rotationMatrix, SensorManager.AXIS_X,
-                    SensorManager.AXIS_Y, remappedMatrix)
+                    SensorManager.AXIS_Z, remappedMatrix)
                 SensorManager.getOrientation(remappedMatrix, orientationAngles)
 
-                tempAzimuth = Math.toDegrees(orientationAngles[0].toDouble()).toFloat()
-
-                azimuth = (tempAzimuth + 360) % 360
-                pitch = Math.toDegrees(orientationAngles[1].toDouble()).toFloat()
+                val rawAzimuth = Math.toDegrees(orientationAngles[0].toDouble()).toFloat()
+                val rawPitch = Math.toDegrees(orientationAngles[1].toDouble()).toFloat()
                 roll = Math.toDegrees(orientationAngles[2].toDouble()).toFloat()
+
+                azimuth = (rawAzimuth + 360) % 360
+                pitch = rawPitch
+
             }
             if(event?.sensor?.type == TYPE_PRESSURE){
                 if(tieneSensor){
-                    testPressure = event.values[0]
+                    pressure = event.values[0]
                 }
-                newAltitude = SensorManager.getAltitude(SensorManager.PRESSURE_STANDARD_ATMOSPHERE, testPressure)
+                newAltitude = SensorManager.getAltitude(
+                    SensorManager.PRESSURE_STANDARD_ATMOSPHERE,
+                    pressure
+                )
             }
             if(event?.sensor?.type == TYPE_LIGHT){
                 lightLevel = event.values[0]
@@ -177,6 +192,27 @@ fun Vista360(controller: NavController) {
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
             stars = getStarsFromHYG(context)
+        }
+    }
+
+    LaunchedEffect(azimuth, pitch, latitude, stars) {
+        if(abs(azimuth - lastAzimuth) > 0.5f || abs(pitch - lastPitch) > 0.5f){
+            withContext(Dispatchers.Default){
+                val filtered = visibleStars(
+                    stars,
+                    latitude,
+                    longitude,
+                    altitude,
+                    azimuth,
+                    -pitch,
+                    utcTime = System.currentTimeMillis()
+                )
+
+                visibleStars = filtered
+                lastAzimuth = azimuth
+                lastPitch = pitch
+
+            }
         }
     }
 
@@ -213,8 +249,8 @@ fun Vista360(controller: NavController) {
             Text("Altitudes: $altitude, $newAltitude", fontSize = 20.sp)
             //Text("Los valores de vector de rotacion son x: ${x_rot}, y: ${y_rot}, z: ${z_rot} ", fontSize = 20.sp)
             Text("Azimuth: $azimuth, Pitch: $pitch, Roll: $roll", fontSize = 20.sp)
-            Text("Fecha y hora: $now", fontSize = 20.sp)
-            Text("El valor de luz detectado por el sensor es: ${lightLevel}", fontSize = 20.sp)
+            //Text("Fecha y hora: $now", fontSize = 20.sp)
+            //Text("El valor de luz detectado por el sensor es: ${lightLevel}", fontSize = 20.sp)
             Text("Test presion atmos: $testPressure ($tieneSensor)", fontSize = 20.sp)*/
 
             Compass(azimuth)
@@ -222,14 +258,24 @@ fun Vista360(controller: NavController) {
         }
 
         LazyColumn(modifier = Modifier.weight(6F)) {
-            items(visibleStars(stars, latitude, longitude).sortedBy { it.visualMagnitude }) { star ->
-                val starInfo: String = "Nombre: ${star.properName}, Magnitud: ${star.visualMagnitude}"
-                MyRow(starInfo)
+            items(visibleStars.sortedBy { it.visualMagnitude }) { star ->
+                StarInfo(star)
             }
         }
 
     }
 
+}
+
+@Composable
+fun StarInfo(star: Star){
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+    ) {
+        MyRow("Nombre: ${star.properName}, Constelación: ${star.constelation}", Icons.Default.Star)
+        MyRow("Es ${star.luminosity?.toInt()} veces mas brillante que el sol!", Icons.Default.Info)
+        MyRow("Se encuentra a ${star.distance?.times(3262)?.toInt()} años luz de nosotros!", Icons.Default.Info)
+    }
 }
 
 @Composable
@@ -290,11 +336,11 @@ fun getCardinalDirection(azimuth: Float): String{
 }
 
 @Composable
-fun MyRow(text: String){
+fun MyRow(text: String, icon: ImageVector){
     Row(
         modifier = Modifier.fillMaxSize()
     ){
-        Icon(Icons.Default.Star, "Icon", Modifier.weight(1F).align(Alignment.CenterVertically).size(18.dp))
+        Icon(imageVector = icon, "Icon", Modifier.weight(2F).align(Alignment.CenterVertically))
         Text (text, modifier = Modifier.weight(8F).align(Alignment.CenterVertically), fontSize = 18.sp)
     }
 }
