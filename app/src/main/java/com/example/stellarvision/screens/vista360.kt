@@ -54,8 +54,8 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.example.stellarvision.model.Star
 import com.example.stellarvision.R
-import com.example.stellarvision.Util.getStarsFromHYG
-import com.example.stellarvision.Util.visibleStars
+import com.example.stellarvision.common.getStarsFromHYG
+import com.example.stellarvision.common.visibleStars
 import com.example.stellarvision.sensorManager
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted

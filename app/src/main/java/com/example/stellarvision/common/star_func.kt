@@ -1,4 +1,4 @@
-package com.example.stellarvision.Util
+package com.example.stellarvision.common
 
 import android.content.Context
 import com.example.stellarvision.model.Star
