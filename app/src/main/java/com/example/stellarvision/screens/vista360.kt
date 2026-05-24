@@ -74,7 +74,10 @@ import com.google.android.gms.location.Priority
 import kotlin.math.abs
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
-
+import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material3.Scaffold
+import com.example.stellarvision.common.AppFab
+import com.example.stellarvision.navigation.AppScreens
 
 @OptIn(ExperimentalTime::class)
 @Composable
@@ -331,7 +334,6 @@ fun MyRow(text: String, icon: ImageVector){
 fun Vista360Screen(controller: NavController){
     val locationPermission = Manifest.permission.ACCESS_FINE_LOCATION
     val locationPermissionState = rememberPermissionState(locationPermission)
-    var showButton by remember {mutableStateOf(false)}
 
     LaunchedEffect(Unit) {
         if(!locationPermissionState.status.isGranted) {
@@ -339,23 +341,42 @@ fun Vista360Screen(controller: NavController){
         }
     }
 
-    if(locationPermissionState.status.isGranted){
-        Vista360(controller)
-    }else{
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+    Scaffold(
+        floatingActionButton = {
+            AppFab(
+                onClick = { controller.navigate(AppScreens.CameraX.name) },
+                icon = Icons.Default.PhotoCamera,
+                contentDescription = "Abrir CameraX"
+            )
+        }
+    ) { padding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
         ) {
-            val textToShow = if (locationPermissionState.status.shouldShowRationale){
-                "Stellar Vision necesita la ubicación para poder mostrar las estrellas que están encima tuyo"
-            }else{
-                "Permiso de ubicación es necesario para la vista 360. Puedes darlo en la configuración de la aplicación"
-            }
+            if(locationPermissionState.status.isGranted){
+                Vista360(controller)
+            } else {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    val textToShow = if (locationPermissionState.status.shouldShowRationale){
+                        "Stellar Vision necesita la ubicación para poder mostrar las estrellas que están encima tuyo"
+                    } else {
+                        "Permiso de ubicación es necesario para la camara. Puedes darlo en la configuración de la aplicación"
+                    }
 
-            Text(textToShow, modifier = Modifier.padding(15.dp), fontSize = 21.sp)
-            Button(onClick = { locationPermissionState.launchPermissionRequest() }, enabled = locationPermissionState.status.shouldShowRationale) {
-                Text("Pide permiso")
+                    Text(textToShow, modifier = Modifier.padding(15.dp), fontSize = 21.sp)
+                    Button(
+                        onClick = { locationPermissionState.launchPermissionRequest() },
+                        enabled = locationPermissionState.status.shouldShowRationale
+                    ) {
+                        Text("Pide permiso")
+                    }
+                }
             }
         }
     }

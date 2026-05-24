@@ -20,6 +20,7 @@ import com.example.stellarvision.screens.Vista360Screen
 import com.example.stellarvision.screens.Vistalocalizacion
 import com.example.stellarvision.viewmodel.LoginViewModel
 import com.example.stellarvision.viewmodel.RegisterViewModel
+import com.example.stellarvision.screens.CameraXScreen
 
 enum class AppScreens {
    Login,
@@ -28,6 +29,7 @@ enum class AppScreens {
     Homepage,
     Mapa,
     Vista360,
+    CameraX,
     Publicacion,
     Vistalocalizacion,
     Mensajeria,
@@ -76,6 +78,9 @@ fun Navigation(){
         }
         composable(AppScreens.Vista360.name){
             Vista360Screen(navController)
+        }
+        composable(AppScreens.CameraX.name) {
+            CameraXScreen(navController)
         }
         composable(AppScreens.Perfil.name) {
             Perfil(navController)
