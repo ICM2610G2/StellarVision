@@ -1,15 +1,11 @@
 package com.example.stellarvision.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.example.stellarvision.auth
 import com.example.stellarvision.common.validEmailAddress
 import com.example.stellarvision.common.validPassword
 import com.example.stellarvision.common.validUsername
 import com.example.stellarvision.data.repository.AuthRepository
-import com.example.stellarvision.database
 import com.example.stellarvision.model.RegisterState
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -106,29 +102,32 @@ class RegisterViewModel : ViewModel(){
         return true
     }
 
-    fun register(email : String, password : String, username : String = "", confirmPassword : String = "", onSuccess: () -> Unit, onError: (String) -> Unit){
-        if(!validateForm(email,password,username, confirmPassword)){
+    fun register(
+        email: String,
+        password: String,
+        username: String = "",
+        confirmPassword: String = "",
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ){
+
+        if(!validateForm(email, password, username, confirmPassword)){
             return
         }
-        repository.register(email,password)
-            .addOnCompleteListener{
-                if(it.isSuccessful){
-                    saveUser(email, username)
-                    onSuccess()
-                } else {
-                    onError(it.exception?.message ?: "Error al crear la cuenta")
-                }
+
+
+        repository.registerWithDatabase(
+            email = email,
+            password = password,
+            username = username,
+            onSuccess = {
+
+                onSuccess()
+            },
+            onError = {
+
+                onError("Error al completar el registro en Firebase")
             }
-    }
-
-    private fun saveUser(email : String, username : String) {
-        val newUser = mapOf(
-            "email" to email,
-            "username" to username
         )
-        val uid = auth.currentUser?.uid ?: return
-        var myRef = database.getReference("users/${uid}")
-        myRef.setValue(newUser)
-
     }
 }

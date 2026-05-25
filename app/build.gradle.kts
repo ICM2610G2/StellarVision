@@ -82,6 +82,7 @@ dependencies {
     implementation(libs.googleid)
 
     implementation(libs.androidx.room.ktx)
+    implementation(libs.firebase.auth)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
