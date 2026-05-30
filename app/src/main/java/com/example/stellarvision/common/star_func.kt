@@ -1,6 +1,15 @@
 package com.example.stellarvision.common
 
+import android.R.attr.textSize
 import android.content.Context
+import android.graphics.Canvas
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.style.Style
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import android.graphics.Paint
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.nativeCanvas
 import com.example.stellarvision.model.Star
 import com.example.stellarvision.R
 import kotlin.collections.filter
@@ -9,7 +18,13 @@ import kotlin.math.acos
 import kotlin.math.asin
 import kotlin.math.cos
 import kotlin.math.sin
+import android.graphics.Color as AndroidColor
 
+data class ScreenStar(
+    val star: Star,
+    val xPercent: Float,
+    val yPercent: Float
+)
 fun getStarsFromHYG(context: Context): List<Star> {
     val starObjects = mutableListOf<Star>()
     val inputStream = context.resources.openRawResource(R.raw.hyg_v42)
@@ -44,14 +59,16 @@ fun visibleStars(
     azimuth: Float,
     pitch: Float,
     utcTime: Long
-): List<Star>{
+): List<ScreenStar>{
     val lst = calculateLST(utcTime, lon)
+    val fovX = 60.0
+    val fovY = 40.0
 
-    return stars.filter{ star ->
+    return stars.mapNotNull{ star ->
 
-        if(star.properName.isNullOrEmpty()) return@filter false
+        if(star.properName.isNullOrEmpty()) return@mapNotNull null
+
         val ha = (lst - star.rightAscension) * 15.0
-
         val latRad = Math.toRadians(lat)
         val decRad = Math.toRadians(star.declination)
         val haRad = Math.toRadians(ha)
@@ -59,7 +76,7 @@ fun visibleStars(
         val sinAlt = sin(decRad) * sin(latRad) + cos(decRad) * cos(latRad) * cos(haRad)
         val starAlt = Math.toDegrees(asin(sinAlt))
 
-        if(starAlt < -1.0) return@filter false
+        if(starAlt < -1.0) return@mapNotNull null
 
         val cozAz = (sin(decRad) - sin(latRad) * sinAlt) / (cos(latRad) * cos(asin(sinAlt)))
         var starAz = Math.toDegrees(acos(cozAz))
@@ -68,12 +85,67 @@ fun visibleStars(
         val deltaAz = ((starAz - azimuth + 540) % 360) - 180
         val deltaPitch = starAlt - pitch
 
-        val isOnScreen = abs(deltaAz) < (60.0 / 2) && abs(deltaPitch) < (40.0 / 2)
+        val isOnScreen = abs(deltaAz) < (fovX / 2) && abs(deltaPitch) < (fovY / 2)
 
-        val isBrightEnough = star.visualMagnitude <= 5.0
+        val isBrightEnough = star.visualMagnitude <= 3.0
 
-        isOnScreen && isBrightEnough
+        if(isOnScreen && isBrightEnough){
+            val xPercent = (deltaAz / fovX).toFloat()
+            val yPercent = (deltaPitch / fovY).toFloat()
+            ScreenStar(star, xPercent, yPercent)
+        }else{
+            null
+        }
 
+    }
+}
+
+@Composable
+fun StarOverlay(
+    visibleStars: List<ScreenStar>,
+    modifier: Modifier = Modifier
+){
+    Canvas(modifier = modifier){
+        val canvasWidth = size.width
+        val canvasHeight = size.height
+
+        val centerX = canvasWidth / 2
+        val centerY = canvasHeight / 2
+
+        visibleStars.forEach { screenStar ->
+            val x = centerX + (screenStar.xPercent * canvasWidth)
+            val y = centerY - (screenStar.yPercent * canvasHeight)
+
+            val radius = ((6.0 - screenStar.star.visualMagnitude) * 4).toFloat().coerceIn(3f, 12f)
+
+            drawCircle(
+                color = Color.White,
+                radius = radius,
+                center = androidx.compose.ui.geometry.Offset(x,y)
+            )
+
+            drawContext.canvas.nativeCanvas.apply {
+                val textPaint = Paint().apply {
+                    color = AndroidColor.WHITE
+                    textSize = 40f
+                    isAntiAlias = true
+                    style = Paint.Style.FILL
+                    setShadowLayer(4f, 0f, 0f, AndroidColor.BLACK)
+                }
+
+                val infoText = screenStar.star.properName
+                val constelationText = if(!screenStar.star.constelation.isNullOrEmpty()){
+                    " (${screenStar.star.constelation})"
+                }else ""
+
+                drawText(
+                    "$infoText$constelationText",
+                    x + radius + 8f,
+                    y + 10f,
+                    textPaint
+                )
+            }
+        }
     }
 }
 

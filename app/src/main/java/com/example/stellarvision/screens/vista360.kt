@@ -11,6 +11,9 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Looper
 import android.util.Log
+import androidx.camera.core.CameraSelector
+import androidx.camera.view.CameraController
+import androidx.camera.view.LifecycleCameraController
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +27,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Star
@@ -74,13 +78,32 @@ import com.google.android.gms.location.Priority
 import kotlin.math.abs
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
-
+import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.stellarvision.common.AppFab
+import com.example.stellarvision.common.CameraXControls
+import com.example.stellarvision.common.CameraXPhotoSheetContent
+import com.example.stellarvision.common.CameraXPreview
+import com.example.stellarvision.common.ScreenStar
+import com.example.stellarvision.common.StarOverlay
+import com.example.stellarvision.navigation.AppScreens
+import com.example.stellarvision.ui.theme.Surface
+import com.example.stellarvision.viewmodel.CameraXViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalTime::class)
 @Composable
 fun Vista360(controller: NavController) {
     var stars by remember { mutableStateOf<List<Star>>(emptyList()) }
-    var visibleStars by remember { mutableStateOf<List<Star>>(emptyList())}
+    var visibleStars by remember { mutableStateOf<List<ScreenStar>>(emptyList())}
     val context = LocalContext.current
 
     var x_rot by remember { mutableFloatStateOf(0.0F) }
@@ -239,7 +262,7 @@ fun Vista360(controller: NavController) {
         }
 
         LazyColumn(modifier = Modifier.weight(6F)) {
-            items(visibleStars.sortedBy { it.visualMagnitude }) { star ->
+            items(visibleStars.sortedBy { it.star.visualMagnitude }) { star ->
                 StarInfo(star)
             }
         }
@@ -249,13 +272,13 @@ fun Vista360(controller: NavController) {
 }
 
 @Composable
-fun StarInfo(star: Star){
+fun StarInfo(Sstar: ScreenStar){
     Column(
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
     ) {
-        MyRow("Nombre: ${star.properName}, Constelación: ${star.constelation}", Icons.Default.Star)
-        MyRow("Es ${star.luminosity?.toInt()} veces mas brillante que el sol!", Icons.Default.Info)
-        MyRow("Se encuentra a ${star.distance?.times(3262)?.toInt()} años luz de nosotros!", Icons.Default.Info)
+        MyRow("Nombre: ${Sstar.star.properName}, Constelación: ${Sstar.star.constelation}", Icons.Default.Star)
+        MyRow("Es ${Sstar.star.luminosity?.toInt()} veces mas brillante que el sol!", Icons.Default.Info)
+        MyRow("Se encuentra a ${Sstar.star.distance?.times(3262)?.toInt()} años luz de nosotros!", Icons.Default.Info)
     }
 }
 
@@ -331,7 +354,6 @@ fun MyRow(text: String, icon: ImageVector){
 fun Vista360Screen(controller: NavController){
     val locationPermission = Manifest.permission.ACCESS_FINE_LOCATION
     val locationPermissionState = rememberPermissionState(locationPermission)
-    var showButton by remember {mutableStateOf(false)}
 
     LaunchedEffect(Unit) {
         if(!locationPermissionState.status.isGranted) {
@@ -339,23 +361,42 @@ fun Vista360Screen(controller: NavController){
         }
     }
 
-    if(locationPermissionState.status.isGranted){
-        Vista360(controller)
-    }else{
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+    Scaffold(
+        floatingActionButton = {
+            AppFab(
+                onClick = { controller.navigate(AppScreens.CameraX.name) },
+                icon = Icons.Default.PhotoCamera,
+                contentDescription = "Abrir CameraX"
+            )
+        }
+    ) { padding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
         ) {
-            val textToShow = if (locationPermissionState.status.shouldShowRationale){
-                "Stellar Vision necesita la ubicación para poder mostrar las estrellas que están encima tuyo"
-            }else{
-                "Permiso de ubicación es necesario para la vista 360. Puedes darlo en la configuración de la aplicación"
-            }
+            if(locationPermissionState.status.isGranted){
+                Vista360(controller)
+            } else {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    val textToShow = if (locationPermissionState.status.shouldShowRationale){
+                        "Stellar Vision necesita la ubicación para poder mostrar las estrellas que están encima tuyo"
+                    } else {
+                        "Permiso de ubicación es necesario para la camara. Puedes darlo en la configuración de la aplicación"
+                    }
 
-            Text(textToShow, modifier = Modifier.padding(15.dp), fontSize = 21.sp)
-            Button(onClick = { locationPermissionState.launchPermissionRequest() }, enabled = locationPermissionState.status.shouldShowRationale) {
-                Text("Pide permiso")
+                    Text(textToShow, modifier = Modifier.padding(15.dp), fontSize = 21.sp)
+                    Button(
+                        onClick = { locationPermissionState.launchPermissionRequest() },
+                        enabled = locationPermissionState.status.shouldShowRationale
+                    ) {
+                        Text("Pide permiso")
+                    }
+                }
             }
         }
     }
