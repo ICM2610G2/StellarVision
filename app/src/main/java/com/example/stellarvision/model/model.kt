@@ -1,7 +1,7 @@
 package com.example.stellarvision.model
 
 import androidx.annotation.DrawableRes
-import org.osmdroid.util.GeoPoint
+import com.google.android.gms.maps.model.LatLng
 
 data class NavItem(
     val id: String,
@@ -10,8 +10,8 @@ data class NavItem(
     val route: String
 )
 
-data class PostUi (
-    val userName : String,
+data class PostUi(
+    val userName: String,
     val groupText: String,
     val body: String,
     val likes: Int,
@@ -28,24 +28,24 @@ data class LoginState(
 )
 
 data class RegisterState(
-    val email : String = "",
-    val password : String = "",
-    val username : String = "",
-    val confirmPassword : String = "",
-    val emailError : String = "",
-    val passwordError : String = "",
-    val usernameError : String = "",
-    val confirmPasswordError : String = ""
+    val email: String = "",
+    val password: String = "",
+    val username: String = "",
+    val confirmPassword: String = "",
+    val emailError: String = "",
+    val passwordError: String = "",
+    val usernameError: String = "",
+    val confirmPasswordError: String = ""
 )
 
 data class mapState(
-    val userPoint: GeoPoint = GeoPoint(4.60971, -74.08175),
+    val userPoint: LatLng = LatLng(4.60971, -74.08175),
     val startAddress: String = "",
     val endAddress: String = "",
-    val startPoint: GeoPoint? = null,
-    val endPoint: GeoPoint? = null,
-    val destinationPoint: GeoPoint? = null,
-    val routePoints: List<GeoPoint> = emptyList(),
+    val startPoint: LatLng? = null,
+    val endPoint: LatLng? = null,
+    val destinationPoint: LatLng? = null,
+    val routePoints: List<LatLng> = emptyList(),
     val lightLevel: Float = 99999f,
     val isDarkMap: Boolean = false,
     val selectedDistance: String = ""
@@ -54,7 +54,7 @@ data class mapState(
 data class Poi(
     val id: String,
     val title: String,
-    val point: GeoPoint,
+    val point: LatLng,
     @DrawableRes val imageRes: Int,
     @DrawableRes val markerIconRes: Int
 )
