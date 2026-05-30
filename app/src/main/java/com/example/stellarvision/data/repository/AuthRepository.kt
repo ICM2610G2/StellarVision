@@ -19,6 +19,8 @@ class AuthRepository(
         email: String,
         password: String,
         username: String,
+        phoneNumber: String,
+        profilePictureUrl: String,
         onSuccess: () -> Unit,
         onError: () -> Unit
     ) {
@@ -28,7 +30,14 @@ class AuthRepository(
                     val userId = FirebaseAuth.getInstance().currentUser?.uid
                     if (userId != null) {
                         val myRef = database.getReference("users/$userId")
-                        val datosPersona = MyUser(username = username, email = email)
+
+
+                        val datosPersona = MyUser(
+                            username = username,
+                            email = email,
+                            phoneNumber = phoneNumber,
+                            profilePictureUrl = profilePictureUrl
+                        )
 
                         myRef.setValue(datosPersona)
                             .addOnSuccessListener {

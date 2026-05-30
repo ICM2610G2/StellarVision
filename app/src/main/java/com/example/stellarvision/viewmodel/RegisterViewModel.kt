@@ -15,6 +15,10 @@ class RegisterViewModel : ViewModel(){
     private val repository = AuthRepository()
     val registerState = _registerState.asStateFlow()
 
+    fun updatePhoneNumber(phone: String) {
+        _registerState.update { it.copy(phoneNumber = phone, phoneNumberError = "") }
+    }
+
     fun updateEmail(newValue: String){
         _registerState.update { it.copy(email = newValue) }
     }
@@ -40,7 +44,27 @@ class RegisterViewModel : ViewModel(){
         _registerState.update { it.copy(confirmPasswordError = newValue) }
     }
 
-    fun validateForm(email: String, password: String, username: String = "", confirmPassword : String = ""): Boolean {
+    fun updatePhoneNumberError(newValue: String){
+        _registerState.update { it.copy(phoneNumberError = newValue) }
+    }
+
+    fun validatePhoneNumber(phone: String): Boolean {
+        return if (phone.isBlank() || phone.length < 10) {
+            updatePhoneNumberError("Ingresa un número de celular válido de 10 dígitos")
+            false
+        } else {
+            updatePhoneNumberError("")
+            true
+        }
+    }
+
+    fun validateForm(
+        email: String,
+        password: String,
+        username: String = "",
+        confirmPassword : String = "",
+        phoneNumber: String = ""
+    ): Boolean {
         if (email.isEmpty()) {
             updateEmailError("Email is empty")
             return false
@@ -53,18 +77,6 @@ class RegisterViewModel : ViewModel(){
         } else {
             updateEmailError("")
         }
-        if (password.isEmpty()) {
-            updatePasswordError("Password is Empty")
-            return false
-        } else {
-            updatePasswordError("")
-        }
-        if(!validPassword(password)) {
-            updatePasswordError("Password must contain an uppercase, a lowercase, a number and a symbol.")
-            return false
-        }else{
-            updatePasswordError("")
-        }
         if(username.isEmpty()){
             updateUsernameError("Username is empty")
             return false
@@ -76,6 +88,30 @@ class RegisterViewModel : ViewModel(){
             return false
         }else{
             updateUsernameError("")
+        }
+
+
+        if (phoneNumber.isEmpty()) {
+            updatePhoneNumberError("Phone number is empty")
+            return false
+        } else if (phoneNumber.length < 10) {
+            updatePhoneNumberError("Phone number must be at least 10 digits")
+            return false
+        } else {
+            updatePhoneNumberError("")
+        }
+
+        if (password.isEmpty()) {
+            updatePasswordError("Password is Empty")
+            return false
+        } else {
+            updatePasswordError("")
+        }
+        if(!validPassword(password)) {
+            updatePasswordError("Password must contain an uppercase, a lowercase, a number and a symbol.")
+            return false
+        }else{
+            updatePasswordError("")
         }
         if(password != confirmPassword){
             updateConfirmPasswordError("The password must be the same.")
@@ -107,11 +143,13 @@ class RegisterViewModel : ViewModel(){
         password: String,
         username: String = "",
         confirmPassword: String = "",
+        phoneNumber: String = "",
+        profilePictureUrl: String = "",
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ){
 
-        if(!validateForm(email, password, username, confirmPassword)){
+        if(!validateForm(email, password, username, confirmPassword, phoneNumber)){
             return
         }
 
@@ -120,12 +158,12 @@ class RegisterViewModel : ViewModel(){
             email = email,
             password = password,
             username = username,
+            phoneNumber = phoneNumber,
+            profilePictureUrl = profilePictureUrl,
             onSuccess = {
-
                 onSuccess()
             },
             onError = {
-
                 onError("Error al completar el registro en Firebase")
             }
         )
