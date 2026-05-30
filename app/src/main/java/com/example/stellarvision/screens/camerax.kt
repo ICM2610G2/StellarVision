@@ -2,7 +2,14 @@ package com.example.stellarvision.screens
 
 import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
+import android.hardware.Sensor
+import android.hardware.Sensor.TYPE_ROTATION_VECTOR
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.net.Uri
+import android.os.Looper
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -31,9 +38,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -52,15 +62,28 @@ import com.example.stellarvision.common.AppText
 import com.example.stellarvision.common.CameraXControls
 import com.example.stellarvision.common.CameraXPhotoSheetContent
 import com.example.stellarvision.common.CameraXPreview
+import com.example.stellarvision.common.ScreenStar
+import com.example.stellarvision.common.StarOverlay
+import com.example.stellarvision.common.createLocationCallback
+import com.example.stellarvision.common.createLocationRequest
+import com.example.stellarvision.common.getStarsFromHYG
+import com.example.stellarvision.common.visibleStars
+import com.example.stellarvision.model.Star
 import com.example.stellarvision.navigation.AppScreens
+import com.example.stellarvision.sensorManager
 import com.example.stellarvision.viewmodel.CameraXViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
+import com.google.android.gms.location.LocationServices
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
+import kotlin.math.abs
+
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
@@ -68,13 +91,97 @@ fun CameraXScreen(
     controller: NavController,
     viewModel: CameraXViewModel = viewModel()
 ) {
+
     val context = LocalContext.current
     val appContext = context.applicationContext
+
+    var azimuth by remember { mutableFloatStateOf(0.0F) }
+    var lastAzimuth by remember { mutableFloatStateOf(0.0F) }
+    var pitch by remember { mutableFloatStateOf(0.0F) }
+    var lastPitch by remember { mutableFloatStateOf(0.0F) }
+
+    var stars by remember { mutableStateOf<List<Star>>(emptyList()) }
+    var visibleStars by remember { mutableStateOf<List<ScreenStar>>(emptyList())}
+
+    val locationClient = LocationServices.getFusedLocationProviderClient(context)
+    val locationRequest = createLocationRequest()
+    var latitude by remember { mutableDoubleStateOf(0.0) }
+    var longitude by remember { mutableDoubleStateOf(0.0) }
+    var altitude by remember { mutableDoubleStateOf(0.0) }
+    val locationCallback = createLocationCallback{result ->
+        result.lastLocation?.let {
+            latitude = it.latitude
+            longitude = it.longitude
+            altitude = it.altitude
+        }
+    }
+
+    val rotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+
+    val sensorListener = object : SensorEventListener {
+        override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
+        }
+
+        override fun onSensorChanged(event: SensorEvent?) {
+            if(event?.sensor?.type == TYPE_ROTATION_VECTOR){
+
+                val rotationMatrix = FloatArray(9)
+                val remappedMatrix = FloatArray(9)
+                val orientationAngles = FloatArray(3)
+
+                SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
+                SensorManager.remapCoordinateSystem(rotationMatrix, SensorManager.AXIS_X,
+                    SensorManager.AXIS_Z, remappedMatrix)
+                SensorManager.getOrientation(remappedMatrix, orientationAngles)
+
+                val rawAzimuth = Math.toDegrees(orientationAngles[0].toDouble()).toFloat()
+                val rawPitch = Math.toDegrees(orientationAngles[1].toDouble()).toFloat()
+
+                azimuth = (rawAzimuth + 360) % 360
+                pitch = rawPitch
+
+            }
+
+        }
+    }
+
     val permissionState = rememberPermissionState(Manifest.permission.CAMERA)
+    val locationPermissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
+
+    var showStars by remember { mutableStateOf(false) }
+
     val photoUris by viewModel.photoUris.collectAsState()
     val scaffoldState = rememberBottomSheetScaffoldState()
     val scope = rememberCoroutineScope()
     var message by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.IO) {
+            stars = getStarsFromHYG(context)
+        }
+    }
+
+    LaunchedEffect(azimuth, pitch, latitude, stars) {
+        if(abs(azimuth - lastAzimuth) > 0.5f || abs(pitch - lastPitch) > 0.5f){
+            withContext(Dispatchers.Default){
+                val filtered = visibleStars(
+                    stars,
+                    latitude,
+                    longitude,
+                    altitude,
+                    azimuth,
+                    -pitch,
+                    utcTime = System.currentTimeMillis()
+                )
+
+                visibleStars = filtered
+                lastAzimuth = azimuth
+                lastPitch = pitch
+
+            }
+        }
+    }
+
 
     LaunchedEffect(Unit) {
         if (!permissionState.status.isGranted) {
@@ -86,6 +193,21 @@ fun CameraXScreen(
         if (message != null) {
             delay(2500)
             message = null
+        }
+    }
+
+    DisposableEffect(Unit) {
+        if(ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+            locationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+        }
+
+        rotationVectorSensor?.let{
+            sensorManager.registerListener(sensorListener, rotationVectorSensor, SensorManager.SENSOR_DELAY_FASTEST)
+        }
+
+        onDispose {
+            locationClient.removeLocationUpdates { locationCallback }
+            sensorManager.unregisterListener(sensorListener)
         }
     }
 
@@ -126,6 +248,13 @@ fun CameraXScreen(
                 controller = cameraController,
                 modifier = Modifier.fillMaxSize()
             )
+
+            //if(locationPermissionState.status.isGranted){
+                StarOverlay(
+                    visibleStars = visibleStars,
+                    modifier = Modifier.fillMaxSize()
+                )
+            //}
 
             CameraXTopBar(
                 onBack = { controller.popBackStack() },
@@ -188,10 +317,15 @@ fun CameraXScreen(
             )
         }
     }
+    /*LaunchedEffect(locationPermissionState.status.isGranted) {
+        if(locationPermissionState.status.isGranted && !showStars){
+            showStars = true
+        }
+    }*/
 }
 
 @Composable
-private fun CameraXTopBar(
+fun CameraXTopBar(
     onBack: () -> Unit,
     onSwitchCamera: () -> Unit,
     modifier: Modifier = Modifier
@@ -228,7 +362,7 @@ private fun CameraXTopBar(
 }
 
 @Composable
-private fun CameraXPermissionContent(
+fun CameraXPermissionContent(
     showRationale: Boolean,
     onRequestPermission: () -> Unit
 ) {
@@ -266,7 +400,7 @@ private fun CameraXPermissionContent(
     }
 }
 
-private fun takePhoto(
+fun takePhoto(
     context: Context,
     controller: LifecycleCameraController,
     onPhotoSaved: (Uri) -> Unit,
@@ -299,7 +433,7 @@ private fun takePhoto(
     )
 }
 
-private fun navigateToCreatePublication(
+fun navigateToCreatePublication(
     controller: NavController,
     uri: Uri
 ) {
