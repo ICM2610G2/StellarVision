@@ -84,6 +84,8 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     implementation(libs.firebase.auth)
 
+    implementation("com.google.firebase:firebase-storage-ktx")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
