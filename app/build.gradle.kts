@@ -93,6 +93,9 @@ dependencies {
     implementation(libs.googleid)
 
     implementation(libs.androidx.room.ktx)
+    implementation(libs.firebase.auth)
+
+    implementation("com.google.firebase:firebase-storage-ktx")
 
     val cameraxVersion = "1.3.0"
     implementation("androidx.camera:camera-core:${cameraxVersion}")
