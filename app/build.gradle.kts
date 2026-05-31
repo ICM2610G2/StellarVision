@@ -1,7 +1,16 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.gms.google.services)
+}
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { localProperties.load(it) }
 }
 
 android {
@@ -18,6 +27,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        manifestPlaceholders["MAPS_API_KEY"] =
+            localProperties.getProperty("MAPS_API_KEY") ?: ""
     }
 
     buildTypes {
@@ -66,13 +78,10 @@ dependencies {
     implementation(libs.androidx.compose.foundation)
 
     implementation("io.coil-kt:coil-compose:2.7.0")
-    implementation("com.google.accompanist:accompanist-permissions:0.37.3")
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.material:material-icons-core")
 
-    implementation("org.osmdroid:osmdroid-android:6.1.20")
-    implementation("com.github.MKergall:osmbonuspack:6.8.0")
-    implementation("com.google.android.gms:play-services-location:21.3.0")
+    implementation("com.google.maps.android:maps-compose:8.3.0")
 
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
     implementation("com.google.firebase:firebase-auth-ktx")

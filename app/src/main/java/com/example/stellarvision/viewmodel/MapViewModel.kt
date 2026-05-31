@@ -2,15 +2,15 @@ package com.example.stellarvision.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.example.stellarvision.model.mapState
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import org.osmdroid.util.GeoPoint
 
 class MapViewModel : ViewModel() {
     private val _state = MutableStateFlow(mapState())
     val state = _state.asStateFlow()
 
-    fun updateUserPoint(point: GeoPoint) {
+    fun updateUserPoint(point: LatLng) {
         _state.value = _state.value.copy(userPoint = point)
     }
 
@@ -22,19 +22,19 @@ class MapViewModel : ViewModel() {
         _state.value = _state.value.copy(endAddress = v)
     }
 
-    fun setStartPoint(p: GeoPoint?) {
+    fun setStartPoint(p: LatLng?) {
         _state.value = _state.value.copy(startPoint = p, routePoints = emptyList())
     }
 
-    fun setEndPoint(p: GeoPoint?) {
+    fun setEndPoint(p: LatLng?) {
         _state.value = _state.value.copy(endPoint = p, routePoints = emptyList())
     }
 
-    fun setRoute(points: List<GeoPoint>) {
+    fun setRoute(points: List<LatLng>) {
         _state.value = _state.value.copy(routePoints = points)
     }
 
-    fun setDestinationPoint(p: GeoPoint?) {
+    fun setDestinationPoint(p: LatLng?) {
         _state.value = _state.value.copy(destinationPoint = p, routePoints = emptyList())
     }
 
