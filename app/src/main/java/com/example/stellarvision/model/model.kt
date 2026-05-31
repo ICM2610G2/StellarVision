@@ -32,10 +32,13 @@ data class RegisterState(
     val password : String = "",
     val username : String = "",
     val confirmPassword : String = "",
+    val phoneNumber : String = "",
+    val profilePictureUrl : String = "",
     val emailError : String = "",
     val passwordError : String = "",
     val usernameError : String = "",
-    val confirmPasswordError : String = ""
+    val confirmPasswordError : String = "",
+    val phoneNumberError : String = ""
 )
 
 data class mapState(
