@@ -80,8 +80,7 @@ fun Homepage(
                                 homeViewModel.conmutarLike(publicacion.id, currentUserId)
                             },
                             onCommentClick = {
-                                // Lógica de navegación a comentarios si se necesita a futuro:
-                                // controller.navigate("comentarios/${publicacion.id}")
+                                controller.navigate("comentarios/${publicacion.id}")
                             }
                         )
                     }

@@ -21,6 +21,7 @@ import com.example.stellarvision.screens.Vistalocalizacion
 import com.example.stellarvision.viewmodel.LoginViewModel
 import com.example.stellarvision.viewmodel.RegisterViewModel
 import com.example.stellarvision.screens.CameraXScreen
+import com.example.stellarvision.screens.ComentariosScreen
 
 enum class AppScreens {
    Login,
@@ -91,6 +92,13 @@ fun Navigation(){
         composable("poi/{id}") { backStackEntry ->
             val id = backStackEntry.arguments?.getString("id") ?: return@composable
             PointerDetail(navController, poiId = id)
+        }
+        composable("comentarios/{publicacionId}") { backStackEntry ->
+            val pubId = backStackEntry.arguments?.getString("publicacionId") ?: return@composable
+            ComentariosScreen(
+                publicacionId = pubId,
+                controller = navController
+            )
         }
     }
 }
