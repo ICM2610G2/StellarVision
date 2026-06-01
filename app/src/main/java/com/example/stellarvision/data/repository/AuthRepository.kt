@@ -8,6 +8,7 @@ import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
+import com.example.stellarvision.model.Post
 
 class AuthRepository(
     private val firebase : FirebaseAuthDataSource = FirebaseAuthDataSource()
@@ -17,12 +18,69 @@ class AuthRepository(
 
     fun login(email : String, password : String) = firebase.login(email, password)
 
+    fun crearPublicacion(
+        title: String,
+        description: String,
+        constellation: String,
+        locationPrivacy: String,
+        imageUri: Uri,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val userId = getCurrentUser()?.uid
+        if (userId == null) {
+            onError("Usuario no autenticado")
+            return
+        }
+
+
+        val database = FirebaseDatabase.getInstance()
+        database.getReference("users/$userId").get().addOnSuccessListener { snapshot ->
+            val userName = snapshot.child("username").getValue(String::class.java) ?: "Astrónomo"
+
+
+            val postRef = database.getReference("posts").push()
+            val postId = postRef.key ?: return@addOnSuccessListener
+
+
+            val storageRef = FirebaseStorage.getInstance().reference.child("posts/$postId.jpg")
+
+            storageRef.putFile(imageUri)
+                .addOnSuccessListener {
+                    storageRef.downloadUrl.addOnSuccessListener { downloadUri ->
+
+                        val nuevaPublicacion = Post(
+                            postId = postId,
+                            userId = userId,
+                            userName = userName,
+                            title = title,
+                            description = description,
+                            constellation = constellation,
+                            locationPrivacy = locationPrivacy,
+                            imageUrl = downloadUri.toString(),
+                            timestamp = System.currentTimeMillis()
+                        )
+
+
+                        postRef.setValue(nuevaPublicacion)
+                            .addOnSuccessListener { onSuccess() }
+                            .addOnFailureListener { onError("Error al guardar texto en la base de datos") }
+                    }
+                }
+                .addOnFailureListener {
+                    onError("Error al subir la imagen a Firebase Storage")
+                }
+        }.addOnFailureListener {
+            onError("No se pudo verificar el perfil del usuario")
+        }
+    }
+
     fun registerWithDatabase(
         email: String,
         password: String,
         username: String,
         phoneNumber: String,
-        profilePictureUrl: String, // Recibe el path local temporal (Uri en String)
+        profilePictureUrl: String,
         onSuccess: () -> Unit,
         onError: () -> Unit
     ) {
@@ -32,7 +90,6 @@ class AuthRepository(
                     val userId = FirebaseAuth.getInstance().currentUser?.uid
                     if (userId != null) {
 
-                        // Lógica de subida de archivos integrada basada en tu ejemplo
                         if (profilePictureUrl.isNotEmpty()) {
                             val storageRef = FirebaseStorage.getInstance().reference.child("avatars/$userId.jpg")
                             val localFileUri = Uri.parse(profilePictureUrl)
@@ -40,16 +97,16 @@ class AuthRepository(
                             storageRef.putFile(localFileUri)
                                 .addOnSuccessListener {
                                     storageRef.downloadUrl.addOnSuccessListener { downloadUri ->
-                                        // Guardamos en la base de datos con la URL de Firebase Storage final
+
                                         guardarDatosFinales(userId, username, email, phoneNumber, downloadUri.toString(), onSuccess, onError)
                                     }
                                 }
                                 .addOnFailureListener {
-                                    // Si falla la subida, crea la cuenta pero guarda la foto vacía
+
                                     guardarDatosFinales(userId, username, email, phoneNumber, "", onSuccess, onError)
                                 }
                         } else {
-                            // Si no seleccionó imagen, guardamos directo con foto vacía
+
                             guardarDatosFinales(userId, username, email, phoneNumber, "", onSuccess, onError)
                         }
 
@@ -61,8 +118,6 @@ class AuthRepository(
                 }
             }
     }
-
-    // Función auxiliar interna estructurada bajo tu mismo patrón de guardado
     private fun guardarDatosFinales(
         userId: String,
         username: String,

@@ -10,6 +10,20 @@ data class NavItem(
     val route: String
 )
 
+data class Post(
+    val postId: String = "",
+    val userId: String = "",
+    val userName: String = "",
+    val title: String = "",
+    val description: String = "",
+    val constellation: String = "",
+    val locationPrivacy: String = "",
+    val imageUrl: String = "",
+    val timestamp: Long = 0,
+    val likes: Int = 0,
+    val comments: Int = 0
+)
+
 data class PostUi(
     val userName: String,
     val groupText: String,
