@@ -1,5 +1,6 @@
 package com.example.stellarvision.screens
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,36 +28,46 @@ import com.example.stellarvision.common.iconsNavBar
 fun Homepage(controller: NavController) {
     BottomBar(controller, iconsNavBar) { padding ->
         var selected by rememberSaveable { mutableIntStateOf(1) }
-        Column(
-            modifier = Modifier.padding(padding).fillMaxSize()
+
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
         ) {
-            HomeTopTabs(
-                selectedIndex = selected,
-                modifier = Modifier,
-                onSelect = {selected=it}
-            )
-            PostCard(
-                userName = "Helena",
-                groupText = "Hace 5 minutos",
-                body = "Hoy en la noche tome una foto de la constelacion Orion. Me encanta como se ven las constelaciones con esta aplicacion!",
-                likes= 8,
-                comments = 1,
-                previewUser = "Daniel",
-                previewText = "Se ve bastante bien, desde que lugar la tomaste?"
-            )
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                HomeTopTabs(
+                    selectedIndex = selected,
+                    modifier = Modifier,
+                    onSelect = { selected = it }
+                )
+                PostCard(
+                    userName = "Helena",
+                    groupText = "Hace 5 minutos",
+                    body = "Hoy en la noche tome una foto de la constelacion Orion. Me encanta como se ven las constelaciones con esta aplicacion!",
+                    likes = 8,
+                    comments = 1,
+                    previewUser = "Daniel",
+                    previewText = "Se ve bastante bien, desde que lugar la tomaste?"
+                )
+            }
+
+
+            Button(
+                onClick = {
+                    controller.navigate("publicacion")
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Nueva Publicación", modifier = Modifier.padding(vertical = 4.dp))
+            }
         }
-    }
-    Button(
-        onClick = {
-            controller.navigate("publicacion")
-        },
-        modifier = Modifier
-            .padding(top = 700.dp)
-            .padding(horizontal = 10.dp)
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Text("Nueva Publicación")
     }
 }
 

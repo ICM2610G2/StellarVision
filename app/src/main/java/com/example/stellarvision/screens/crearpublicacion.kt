@@ -1,46 +1,45 @@
 package com.example.stellarvision.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Icon
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.stellarvision.common.AppButton
 import com.example.stellarvision.common.AppText
 import com.example.stellarvision.common.AppTextField
+import com.example.stellarvision.navigation.AppScreens
+import com.example.stellarvision.viewmodel.PublicacionViewModel
 
 @Composable
 fun CrearPublicacion(
     controller: NavController,
+    viewModel: PublicacionViewModel = viewModel()
 ) {
     val imageUriString = controller.previousBackStackEntry
         ?.savedStateHandle
         ?.get<String>("imageUri")
 
     val imageUri = imageUriString?.toUri()
+    val context = LocalContext.current
+    val isLoading by viewModel.isLoading.collectAsState()
+
     var titulo by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
     var constelacion by remember { mutableStateOf("") }
@@ -58,7 +57,9 @@ fun CrearPublicacion(
     val formularioCompleto =
         titulo.isNotBlank() &&
                 descripcion.isNotBlank() &&
-                constelacion.isNotBlank()
+                constelacion.isNotBlank() &&
+                imageUri != null &&
+                !isLoading
 
     Column(
         modifier = Modifier
@@ -133,7 +134,8 @@ fun CrearPublicacion(
                     text = "Cambiar imagen",
                     onClick = {
                         controller.popBackStack()
-                    }
+                    },
+                    enabled = !isLoading
                 )
             }
         }
@@ -142,7 +144,7 @@ fun CrearPublicacion(
 
         AppTextField(
             value = titulo,
-            onValueChange = { titulo = it },
+            onValueChange = { if (!isLoading) titulo = it },
             placeholder = "Título de la publicación"
         )
 
@@ -150,7 +152,7 @@ fun CrearPublicacion(
 
         AppTextField(
             value = descripcion,
-            onValueChange = { descripcion = it },
+            onValueChange = { if (!isLoading) descripcion = it },
             placeholder = "Descripción de la observación"
         )
 
@@ -173,7 +175,7 @@ fun CrearPublicacion(
                 ElevatedCard(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    onClick = { constelacion = opcion }
+                    onClick = { if (!isLoading) constelacion = opcion }
                 ) {
                     Row(
                         modifier = Modifier
@@ -213,7 +215,7 @@ fun CrearPublicacion(
                 ElevatedCard(
                     modifier = Modifier
                         .weight(1f)
-                        .clickable { privacidadUbicacion = opcion },
+                        .clickable { if (!isLoading) privacidadUbicacion = opcion },
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Row(
@@ -238,13 +240,34 @@ fun CrearPublicacion(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        AppButton(
-            text = "Publicar",
-            onClick = {
-                // TODO:
-                // Aquí luego conectamos Firebase Storage + Realtime DB / Firestore
-            },
-            enabled = formularioCompleto
-        )
+        if (isLoading) {
+            CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+        } else {
+            AppButton(
+                text = "Publicar",
+                onClick = {
+                    if (imageUri != null) {
+                        viewModel.subirPublicacion(
+                            title = titulo,
+                            description = descripcion,
+                            constellation = constelacion,
+                            locationPrivacy = privacidadUbicacion,
+                            imageUri = imageUri,
+                            onSuccess = {
+                                Toast.makeText(context, "¡Publicado con éxito!", Toast.LENGTH_LONG).show()
+
+                                controller.navigate(AppScreens.Homepage.name) {
+                                    popUpTo(AppScreens.Homepage.name) { inclusive = true }
+                                }
+                            },
+                            onError = { error ->
+                                Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    }
+                },
+                enabled = formularioCompleto
+            )
+        }
     }
 }
