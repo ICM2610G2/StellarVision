@@ -60,23 +60,32 @@ class HomeViewModel : ViewModel() {
     }
 
     fun conmutarLike(publicacionId: String, currentUserId: String) {
+        if (currentUserId == "anonimo") return
+
         val postRef = database.child(publicacionId)
 
         postRef.get().addOnSuccessListener { snapshot ->
             if (snapshot.exists()) {
                 val likedByNode = snapshot.child("likedBy").child(currentUserId)
+
+
                 val likesActuales = snapshot.child("likes").getValue(Int::class.java) ?: 0
 
                 if (likedByNode.exists()) {
 
-                    likedByNode.ref.removeValue()
-                    postRef.child("likes").setValue((likesActuales - 1).coerceAtLeast(0))
+                    likedByNode.ref.removeValue().addOnSuccessListener {
+                        postRef.child("likes").setValue((likesActuales - 1).coerceAtLeast(0))
+                    }
                 } else {
 
-                    likedByNode.ref.setValue(true)
-                    postRef.child("likes").setValue(likesActuales + 1)
+                    likedByNode.ref.setValue(true).addOnSuccessListener {
+                        postRef.child("likes").setValue(likesActuales + 1)
+                    }
                 }
             }
+        }.addOnFailureListener { error ->
+
+            println("Error en Firebase Database: ${error.message}")
         }
     }
 }
