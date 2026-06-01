@@ -1,66 +1,82 @@
 package com.example.stellarvision.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 
 data class PublicacionData(
     val id: String = "",
-    val userName: String = "Usuario Anónimo",
+    val userName: String = "Astrónomo",
     val groupText: String = "",
     val body: String = "",
     val imageUrl: String? = null,
     val likes: Int = 0,
     val comments: Int = 0,
-    val likedBy: List<String> = emptyList()
+    val likedBy: Map<String, Boolean> = emptyMap()
 )
 
 class HomeViewModel : ViewModel() {
-    private val db = FirebaseFirestore.getInstance()
+    private val database = FirebaseDatabase.getInstance().reference.child("posts")
 
     private val _publicaciones = MutableStateFlow<List<PublicacionData>>(emptyList())
     val publicaciones: StateFlow<List<PublicacionData>> = _publicaciones
 
     init {
-        escucharPublicaciones()
+        cargarPublicaciones()
     }
-    private fun escucharPublicaciones() {
-        db.collection("publicaciones")
-            .orderBy("timestamp", Query.Direction.DESCENDING)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null || snapshot == null) return@addSnapshotListener
 
-                val lista = snapshot.documents.mapNotNull { doc ->
-                    val pub = doc.toObject(PublicacionData::class.java)
-                    pub?.copy(id = doc.id)
+    private fun cargarPublicaciones() {
+
+        database.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val lista = mutableListOf<PublicacionData>()
+                for (postSnapshot in snapshot.children) {
+                    val id = postSnapshot.key ?: ""
+                    val userName = postSnapshot.child("userName").getValue(String::class.java) ?: "Anónimo"
+                    val groupText = postSnapshot.child("groupText").getValue(String::class.java) ?: ""
+                    val body = postSnapshot.child("body").getValue(String::class.java) ?: ""
+                    val imageUrl = postSnapshot.child("imageUrl").getValue(String::class.java)
+                    val likes = postSnapshot.child("likes").getValue(Int::class.java) ?: 0
+                    val comments = postSnapshot.child("comments").getValue(Int::class.java) ?: 0
+
+
+                    val likedBy = mutableMapOf<String, Boolean>()
+                    postSnapshot.child("likedBy").children.forEach { uSnapshot ->
+                        uSnapshot.key?.let { uid -> likedBy[uid] = true }
+                    }
+
+                    lista.add(PublicacionData(id, userName, groupText, body, imageUrl, likes, comments, likedBy))
                 }
-                _publicaciones.value = lista
+
+                _publicaciones.value = lista.reversed()
             }
+
+            override fun onCancelled(error: DatabaseError) {}
+        })
     }
 
+    fun conmutarLike(publicacionId: String, currentUserId: String) {
+        val postRef = database.child(publicacionId)
 
-    fun darLike(publicacionId: String, userId: String) {
-        val docRef = db.collection("publicaciones").document(publicacionId)
-        db.runTransaction { transaction ->
-            val snapshot = transaction.get(docRef)
-            val likedBy = snapshot.get("likedBy") as? List<*> ?: emptyList<Any>()
-            val currentLikes = snapshot.getLong("likes")?.toInt() ?: 0
+        postRef.get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                val likedByNode = snapshot.child("likedBy").child(currentUserId)
+                val likesActuales = snapshot.child("likes").getValue(Int::class.java) ?: 0
 
-            if (likedBy.contains(userId)) {
+                if (likedByNode.exists()) {
 
-                transaction.update(docRef, "likedBy", likedBy - userId)
-                transaction.update(docRef, "likes", (currentLikes - 1).coerceAtLeast(0))
-            } else {
+                    likedByNode.ref.removeValue()
+                    postRef.child("likes").setValue((likesActuales - 1).coerceAtLeast(0))
+                } else {
 
-                transaction.update(docRef, "likedBy", likedBy + userId)
-                transaction.update(docRef, "likes", currentLikes + 1)
+                    likedByNode.ref.setValue(true)
+                    postRef.child("likes").setValue(likesActuales + 1)
+                }
             }
-        }.addOnFailureListener {
-
         }
     }
 }
