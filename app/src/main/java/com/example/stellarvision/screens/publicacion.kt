@@ -57,8 +57,6 @@ fun Publicacion(controller: NavController) {
     val context = LocalContext.current
     val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
 
-
-
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
@@ -166,11 +164,21 @@ fun Publicacion(controller: NavController) {
                     text = "Cámara",
                     onClick = {
                         if (cameraPermissionState.status.isGranted) {
+                            // 1. Apuntamos a la carpeta de caché que exige tu XML
+                            val carpetaCamara = File(context.cacheDir, "camera_photos")
+
+                            // 2. Nos aseguramos de crearla físicamente en el almacenamiento privado si no existe
+                            if (!carpetaCamara.exists()) {
+                                carpetaCamara.mkdirs()
+                            }
+
+                            // 3. Colocamos la foto dentro de la subcarpeta autorizada
                             val file = File(
-                                context.filesDir,
+                                carpetaCamara,
                                 "camera_${System.currentTimeMillis()}.jpg"
                             )
 
+                            // 4. Mapeamos la ruta física al Uri dinámico
                             val newUri = FileProvider.getUriForFile(
                                 context,
                                 "${context.packageName}.fileprovider",
