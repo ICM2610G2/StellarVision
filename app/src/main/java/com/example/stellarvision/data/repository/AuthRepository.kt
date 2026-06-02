@@ -129,10 +129,14 @@ class AuthRepository(
     ) {
         val myRef = database.getReference("users/$userId")
         val datosPersona = MyUser(
+            uid = userId,
             username = username,
             email = email,
             phoneNumber = phoneNumber,
-            profilePictureUrl = photoUrl
+            profilePictureUrl = photoUrl,
+            latitude = 0.0,
+            longitude = 0.0,
+            locationUpdatedAt = 0L
         )
 
         myRef.setValue(datosPersona)
