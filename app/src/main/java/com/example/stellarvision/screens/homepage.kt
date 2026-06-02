@@ -46,7 +46,7 @@ fun Homepage(controller: NavController) {
             )
         }
     }
-    Button(
+    /*Button(
         onClick = {
             controller.navigate("publicacion")
         },
@@ -57,7 +57,7 @@ fun Homepage(controller: NavController) {
         shape = RoundedCornerShape(12.dp)
     ) {
         Text("Nueva Publicación")
-    }
+    }*/
 }
 
 @Preview(showBackground = true)
