@@ -87,7 +87,7 @@ fun Homepage(
                 }
             }
 
-            Button(
+            /*Button(
                 onClick = {
                     controller.navigate("publicacion")
                 },
@@ -98,7 +98,7 @@ fun Homepage(
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text("Nueva Publicación", modifier = Modifier.padding(vertical = 4.dp))
-            }
+            }*/
         }
     }
 }

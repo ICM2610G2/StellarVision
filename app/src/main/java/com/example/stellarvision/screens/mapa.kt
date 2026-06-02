@@ -12,6 +12,7 @@ import android.location.Geocoder
 import android.location.Location
 import android.os.Looper
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,6 +24,8 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -36,7 +39,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -45,6 +52,7 @@ import com.example.stellarvision.common.AppFab
 import com.example.stellarvision.common.createLocationCallback
 import com.example.stellarvision.common.createLocationRequest
 import com.example.stellarvision.model.pois
+import com.example.stellarvision.ui.theme.Primary
 import com.example.stellarvision.viewmodel.MapViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -216,7 +224,17 @@ private fun MostrarMapa(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mapa") } )
+                title = { Text(
+                    text = "Lugares con buena visibilidad",
+                    fontSize = 23.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center)
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Primary,
+                    titleContentColor = Color.White
+                 )
+                )
         }
     ) { padding ->
         Box(
@@ -302,7 +320,16 @@ fun PointerDetail(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text(poi.title) })
+            TopAppBar(title = { Text(
+                text = poi.title,
+                fontSize = 23.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                ) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Primary,
+                    titleContentColor = Color.White
+                ))
         },
         floatingActionButton = {
             AppFab(
@@ -321,6 +348,7 @@ fun PointerDetail(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
+                .background(Primary)
         ) {
             Image(
                 painter = painterResource(poi.imageRes),
@@ -331,7 +359,10 @@ fun PointerDetail(
 
             Text(
                 text = "Distancia: $distance",
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.padding(16.dp),
+                fontSize = 21.sp,
+                style = TextStyle(color = Color.White),
+                fontWeight = FontWeight.Bold
             )
         }
     }
