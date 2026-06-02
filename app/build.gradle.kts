@@ -1,16 +1,8 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.gms.google.services)
-}
-
-val localProperties = Properties()
-val localPropertiesFile = rootProject.file("local.properties")
-
-if (localPropertiesFile.exists()) {
-    localPropertiesFile.inputStream().use { localProperties.load(it) }
+    alias(libs.plugins.mapsplatform.secrets.plugin)
 }
 
 android {
@@ -27,9 +19,6 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        manifestPlaceholders["MAPS_API_KEY"] =
-            localProperties.getProperty("MAPS_API_KEY") ?: ""
     }
 
     buildTypes {
@@ -49,14 +38,7 @@ android {
 
     buildFeatures {
         compose = true
-    }
-
-    sourceSets {
-        getByName("main") {
-            assets {
-                srcDirs("src\\main\\assets", "src\\main\\assets")
-            }
-        }
+        buildConfig = true
     }
 }
 
@@ -67,6 +49,7 @@ dependencies {
     implementation(libs.androidx.foundation)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.kotlinx.coroutines.play.services)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
