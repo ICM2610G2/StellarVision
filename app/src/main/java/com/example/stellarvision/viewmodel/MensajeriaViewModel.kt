@@ -20,6 +20,9 @@ class MensajeriaViewModel : ViewModel() {
     var chatId by mutableStateOf<String?>(null)
         private set
 
+    var selectedUserId by mutableStateOf<String?>(null)
+        private set
+
     var error by mutableStateOf<String?>(null)
         private set
 
@@ -38,6 +41,9 @@ class MensajeriaViewModel : ViewModel() {
 
         loading = true
         error = null
+        selectedUserId = null
+        chatId = null
+        mensajes = emptyList()
 
         repository.findUserIdByPhone(phone) { otherUid ->
             loading = false
@@ -48,9 +54,11 @@ class MensajeriaViewModel : ViewModel() {
             }
 
             if (otherUid == currentUid) {
-                error = "No puedes abrir un chat contigo misma"
+                error = "No puedes abrir un chat contigo mismo"
                 return@findUserIdByPhone
             }
+
+            selectedUserId = otherUid
 
             val newChatId = repository.buildChatId(currentUid, otherUid)
             repository.ensureChat(newChatId, currentUid, otherUid)
@@ -75,7 +83,7 @@ class MensajeriaViewModel : ViewModel() {
         val currentChat = chatId
 
         if (currentChat == null) {
-            error = "Primero selecciona un contacto"
+            error = "Primero selecciona un contacto registrado"
             return
         }
 

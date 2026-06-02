@@ -33,6 +33,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.shouldShowRationale
 import com.google.firebase.auth.FirebaseAuth
+import com.example.stellarvision.navigation.AppScreens
 
 data class ContactoSimple(
     val nombre: String,
@@ -239,6 +240,19 @@ fun Mensajeria(controller: NavController) {
                         modifier = Modifier.weight(1f)
                     )
                 }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                AppButton(
+                    text = "Ver seguimiento de usuario",
+                    enabled = mensajeriaViewModel.selectedUserId != null,
+                    onClick = {
+                        mensajeriaViewModel.selectedUserId?.let { userId ->
+                            controller.navigate("${AppScreens.SeguimientoUsuario.name}/$userId")
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     }

@@ -22,6 +22,7 @@ import com.example.stellarvision.viewmodel.LoginViewModel
 import com.example.stellarvision.viewmodel.RegisterViewModel
 import com.example.stellarvision.screens.CameraXScreen
 import com.example.stellarvision.screens.ComentariosScreen
+import com.example.stellarvision.screens.SeguimientoUsuarioScreen
 
 enum class AppScreens {
    Login,
@@ -29,6 +30,7 @@ enum class AppScreens {
     Register2,
     Homepage,
     Mapa,
+    SeguimientoUsuario,
     Vista360,
     CameraX,
     Publicacion,
@@ -67,6 +69,14 @@ fun Navigation(){
         }
         composable(AppScreens.Mapa.name) {
             Mapa(navController)
+        }
+        composable("${AppScreens.SeguimientoUsuario.name}/{userId}") { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId") ?: return@composable
+
+            SeguimientoUsuarioScreen(
+                navController = navController,
+                userId = userId
+            )
         }
         composable(AppScreens.Publicacion.name) {
             Publicacion(navController)
