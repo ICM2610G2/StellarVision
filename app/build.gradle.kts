@@ -96,6 +96,7 @@ dependencies {
     implementation(libs.firebase.auth)
 
     implementation("com.google.firebase:firebase-storage-ktx")
+    implementation(libs.play.services.maps)
 
     val cameraxVersion = "1.3.0"
     implementation("androidx.camera:camera-core:${cameraxVersion}")
