@@ -142,18 +142,25 @@ fun CrearPublicacion(
 
         Spacer(modifier = Modifier.height(14.dp))
 
-        AppTextField(
+        OutlinedTextField(
             value = titulo,
             onValueChange = { if (!isLoading) titulo = it },
-            placeholder = "Título de la publicación"
+            label = { Text("Título de la publicación") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            shape = RoundedCornerShape(12.dp)
         )
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        AppTextField(
+        OutlinedTextField(
             value = descripcion,
             onValueChange = { if (!isLoading) descripcion = it },
-            placeholder = "Descripción de la observación"
+            label = { Text("Descripción de la observación") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = false,
+            minLines = 3,
+            shape = RoundedCornerShape(12.dp)
         )
 
         Spacer(modifier = Modifier.height(14.dp))
