@@ -73,6 +73,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-messaging-ktx")
     implementation(libs.firebase.database)
 
     implementation(libs.androidx.credentials)
@@ -80,6 +81,7 @@ dependencies {
     implementation(libs.googleid)
 
     implementation(libs.androidx.room.ktx)
+    implementation(libs.firebase.messaging)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

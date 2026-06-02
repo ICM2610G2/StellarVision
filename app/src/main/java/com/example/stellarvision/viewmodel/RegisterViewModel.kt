@@ -5,11 +5,13 @@ import com.example.stellarvision.auth
 import com.example.stellarvision.common.validEmailAddress
 import com.example.stellarvision.common.validPassword
 import com.example.stellarvision.common.validUsername
+import com.example.stellarvision.data.firebase.FCMTokenDataSource
 import com.example.stellarvision.data.repository.AuthRepository
 import com.example.stellarvision.database
 import com.example.stellarvision.model.RegisterState
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -122,13 +124,23 @@ class RegisterViewModel : ViewModel(){
     }
 
     private fun saveUser(email : String, username : String) {
-        val newUser = mapOf(
-            "email" to email,
-            "username" to username
-        )
         val uid = auth.currentUser?.uid ?: return
-        var myRef = database.getReference("users/${uid}")
-        myRef.setValue(newUser)
 
+        FirebaseMessaging.getInstance().token
+            .addOnCompleteListener { task ->
+                val token = if (task.isSuccessful) task.result else null
+
+                val newUser = mutableMapOf(
+                    "email" to email,
+                    "username" to username
+                )
+
+                if (token != null) {
+                    newUser["fcmToken"] = token
+                }
+
+                val myRef = database.getReference("users/${uid}")
+                myRef.setValue(newUser)
+            }
     }
 }
