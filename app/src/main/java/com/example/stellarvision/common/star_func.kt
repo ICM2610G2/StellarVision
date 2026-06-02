@@ -145,14 +145,6 @@ fun StarOverlay(
         val centerX = canvasWidth / 2
         val centerY = canvasHeight / 2
 
-        drawCircle(
-            color = Color.Black,
-            radius = 20f,
-            center = Offset(centerX, centerY),
-        )
-
-
-
         val drawnConstellations = mutableSetOf<String>()
 
         visibleStars.forEach { screenStar ->
