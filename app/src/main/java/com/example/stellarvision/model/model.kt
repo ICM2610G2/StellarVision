@@ -65,13 +65,18 @@ data class mapState(
     val routePoints: List<LatLng> = emptyList(),
     val lightLevel: Float = 99999f,
     val isDarkMap: Boolean = false,
-    val selectedDistance: String = ""
+    val selectedDistance: String = "",
+    val pois: List<Poi> = emptyList(),
+    val isLoadingPois: Boolean = false,
+    val poisError: String? = null
 )
 
 data class Poi(
-    val id: String,
-    val title: String,
-    val point: LatLng,
-    @DrawableRes val imageRes: Int,
-    @DrawableRes val markerIconRes: Int
+    val id: String = "",
+    val title: String = "",
+    val point: LatLng = LatLng(0.0, 0.0),
+    val imagePath: String = "",
+    val imageUrl: String = "",
+    @DrawableRes val imageRes: Int? = null,
+    @DrawableRes val markerIconRes: Int? = null
 )

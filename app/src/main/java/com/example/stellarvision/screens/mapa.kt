@@ -51,7 +51,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.stellarvision.common.AppFab
 import com.example.stellarvision.common.createLocationCallback
 import com.example.stellarvision.common.createLocationRequest
-import com.example.stellarvision.model.pois
 import com.example.stellarvision.ui.theme.Primary
 import com.example.stellarvision.viewmodel.MapViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -78,6 +77,11 @@ import org.json.JSONObject
 import java.net.URL
 import java.util.Locale
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import android.util.Log
+import coil.compose.AsyncImage
+import com.example.stellarvision.BuildConfig
+import com.example.stellarvision.ui.theme.Purple40
+import com.example.stellarvision.ui.theme.PurpleGrey80
 
 @Composable
 fun Mapa(controller: NavController) {
@@ -119,6 +123,16 @@ private fun MostrarMapa(
 ) {
     val context = LocalContext.current
     val state by model.state.collectAsState()
+    LaunchedEffect(state.pois) {
+        Log.d("FirebasePOI", "POIs cargados: ${state.pois.size}")
+
+        state.pois.forEach { poi ->
+            Log.d(
+                "FirebasePOI",
+                "id=${poi.id}, title=${poi.title}, lat=${poi.point.latitude}, lng=${poi.point.longitude}, imagePath=${poi.imagePath}, imageUrl=${poi.imageUrl}"
+            )
+        }
+    }
     val scope = rememberCoroutineScope()
 
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -189,7 +203,7 @@ private fun MostrarMapa(
 
         savedStateHandle?.remove<String>("poi_destination_id")
 
-        val poi = pois.firstOrNull { it.id == destPoiId } ?: return@LaunchedEffect
+        val poi = state.pois.firstOrNull { it.id == destPoiId } ?: return@LaunchedEffect
 
         scope.launch(Dispatchers.IO) {
             val route = buildRoutePoints(context, state.userPoint, poi.point)
@@ -231,7 +245,7 @@ private fun MostrarMapa(
                     textAlign = TextAlign.Center)
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Primary,
+                    containerColor = Purple40,
                     titleContentColor = Color.White
                  )
                 )
@@ -263,7 +277,7 @@ private fun MostrarMapa(
                     icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
                 )
 
-                pois.forEach { poi ->
+                state.pois.forEach { poi ->
                     Marker(
                         state = rememberUpdatedMarkerState(position = poi.point),
                         title = poi.title,
@@ -275,7 +289,11 @@ private fun MostrarMapa(
 
                             navController.currentBackStackEntry
                                 ?.savedStateHandle
-                                ?.set("poi_distance", distance)
+                                ?.apply {
+                                    set("poi_distance", distance)
+                                    set("selected_poi_title", poi.title)
+                                    set("selected_poi_image_url", poi.imageUrl)
+                                }
 
                             navController.navigate("poi/${poi.id}")
                             true
@@ -311,25 +329,38 @@ private fun MostrarMapa(
 @Composable
 fun PointerDetail(
     navController: NavController,
-    poiId: String
+    poiId: String,
+    model: MapViewModel = viewModel()
 ) {
-    val poi = pois.first { it.id == poiId }
-    val distance =
-        navController.previousBackStackEntry?.savedStateHandle?.get<String>("poi_distance")
-            ?: "Sin calcular"
+    val state by model.state.collectAsState()
+    val previousHandle = navController.previousBackStackEntry?.savedStateHandle
+
+    val poi = state.pois.firstOrNull { it.id == poiId }
+
+    val title = poi?.title
+        ?: previousHandle?.get<String>("selected_poi_title")
+        ?: poiId
+
+    val imageUrl = poi?.imageUrl.orEmpty()
+
+    val distance = previousHandle?.get<String>("poi_distance") ?: "Sin calcular"
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text(
-                text = poi.title,
-                fontSize = 23.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                ) },
+            TopAppBar(
+                title = {
+                    Text(
+                        text = title,
+                        fontSize = 23.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Primary,
+                    containerColor = Purple40,
                     titleContentColor = Color.White
-                ))
+                )
+            )
         },
         floatingActionButton = {
             AppFab(
@@ -337,7 +368,7 @@ fun PointerDetail(
                 onClick = {
                     navController.previousBackStackEntry
                         ?.savedStateHandle
-                        ?.set("poi_destination_id", poi.id)
+                        ?.set("poi_destination_id", poiId)
 
                     navController.popBackStack()
                 }
@@ -348,14 +379,29 @@ fun PointerDetail(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .background(Primary)
+                .background(Purple40)
         ) {
-            Image(
-                painter = painterResource(poi.imageRes),
-                contentDescription = poi.title,
-                modifier = Modifier.weight(1f),
-                contentScale = ContentScale.Crop
-            )
+            if (imageUrl.isNotBlank()) {
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = title,
+                    modifier = Modifier.weight(1f),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Cargando imagen...",
+                        color = Color.White,
+                        fontSize = 18.sp
+                    )
+                }
+            }
 
             Text(
                 text = "Distancia: $distance",
@@ -410,8 +456,12 @@ fun buildRoutePoints(
     start: LatLng,
     end: LatLng
 ): List<LatLng> {
-    val apiKey = getGoogleMapsApiKey(context)
-    if (apiKey.isBlank()) return listOf(start, end)
+    val apiKey = BuildConfig.MAPS_API_KEY
+
+    if (apiKey.isBlank() || apiKey == "DEFAULT_API_KEY") {
+        Log.e("MapaRoute", "MAPS_API_KEY vacía o inválida. Se pinta línea recta.")
+        return listOf(start, end)
+    }
 
     return try {
         val url = "https://maps.googleapis.com/maps/api/directions/json" +
@@ -422,19 +472,62 @@ fun buildRoutePoints(
 
         val response = URL(url).readText()
         val json = JSONObject(response)
+
+        val status = json.optString("status")
+
+        if (status != "OK") {
+            val error = json.optString("error_message")
+            Log.e("MapaRoute", "Directions API error: $status $error. Se pinta línea recta.")
+
+            return listOf(start, end)
+        }
+
         val routes = json.getJSONArray("routes")
 
         if (routes.length() == 0) {
-            listOf(start, end)
+            Log.e("MapaRoute", "Directions API no devolvió rutas. Se pinta línea recta.")
+            return listOf(start, end)
+        }
+
+        val route = routes.getJSONObject(0)
+        val legs = route.getJSONArray("legs")
+
+        val points = mutableListOf<LatLng>()
+
+        for (i in 0 until legs.length()) {
+            val steps = legs
+                .getJSONObject(i)
+                .getJSONArray("steps")
+
+            for (j in 0 until steps.length()) {
+                val encodedStep = steps
+                    .getJSONObject(j)
+                    .getJSONObject("polyline")
+                    .getString("points")
+
+                points.addAll(decodePolyline(encodedStep))
+            }
+        }
+
+        if (points.isNotEmpty()) {
+            points
         } else {
-            val encoded = routes
-                .getJSONObject(0)
+            val encodedOverview = route
                 .getJSONObject("overview_polyline")
                 .getString("points")
 
-            decodePolyline(encoded).ifEmpty { listOf(start, end) }
+            val overviewPoints = decodePolyline(encodedOverview)
+
+            if (overviewPoints.isNotEmpty()) {
+                overviewPoints
+            } else {
+                listOf(start, end)
+            }
         }
-    } catch (_: Exception) {
+
+    } catch (e: Exception) {
+        Log.e("MapaRoute", "Error construyendo ruta. Se pinta línea recta.", e)
+
         listOf(start, end)
     }
 }
