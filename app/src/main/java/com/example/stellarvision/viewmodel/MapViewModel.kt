@@ -20,7 +20,7 @@ private var filteredLux: Float? = null
 private var pendingDarkMode: Boolean? = null
 private var pendingSince: Long = 0L
 
-private val darkEnterThreshold = 800f
+private val darkEnterThreshold = 80f
 private val lightExitThreshold = 300f
 private val smoothingFactor = 0.12f
 private val stableTimeMs = 2000L
