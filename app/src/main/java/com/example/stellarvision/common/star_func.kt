@@ -100,7 +100,7 @@ fun visibleStars(
 
         val isOnScreen = abs(deltaAz) < (fovX / 2) && abs(deltaPitch) < (fovY / 2)
 
-        val isBrightEnough = star.visualMagnitude <= 5.0
+        val isBrightEnough = star.visualMagnitude <= 6.0
 
         if(isOnScreen && isBrightEnough){
             val xPercent = (deltaAz / fovX).toFloat()
@@ -132,24 +132,10 @@ fun getCameraFov(cameraInfo: CameraInfo): Pair<Float, Float>{
     return Pair(60f, 40f)
 }
 
-data class ConstellationLine(
-    val starId1: String,
-    val starId2: String
-)
-
-val CONSTELLATION_LINES = listOf(
-    ConstellationLine("11767", "85822"), // Polaris - Yildun
-    ConstellationLine("85822", "82080"), // Yildun - Epsilon Ursae Minoris
-    ConstellationLine("82080", "77055"), // Epsilon Ursae Minoris - Zeta Ursae Minoris
-    ConstellationLine("77055", "72607"), // Zeta Ursae Minoris - Kochab
-    ConstellationLine("77055", "79822"), // Zeta Ursae Minoris - Eta Ursae Minoris
-    ConstellationLine("79822", "75097"), // Eta Ursae Minoris - Pherkad
-    ConstellationLine("72607", "75097"), // Kochab - Pherkad
-)
-
 @Composable
 fun StarOverlay(
     visibleStars: List<ScreenStar>,
+    constellationLines: List<ConstellationLine>,
     modifier: Modifier = Modifier
 ){
     Canvas(modifier = modifier){
@@ -165,7 +151,20 @@ fun StarOverlay(
             center = Offset(centerX, centerY),
         )
 
+
+
+        val drawnConstellations = mutableSetOf<String>()
+
         visibleStars.forEach { screenStar ->
+
+            val textPaint = Paint().apply {
+                color = AndroidColor.WHITE
+                textSize = 30f
+                isAntiAlias = true
+                style = Paint.Style.FILL
+                setShadowLayer(4f, 0f, 0f, AndroidColor.BLACK)
+            }
+
             val x = centerX + (screenStar.xPercent * canvasWidth)
             val y = centerY - (screenStar.yPercent * canvasHeight)
 
@@ -178,13 +177,6 @@ fun StarOverlay(
             )
 
             drawContext.canvas.nativeCanvas.apply {
-                val textPaint = Paint().apply {
-                    color = AndroidColor.WHITE
-                    textSize = 40f
-                    isAntiAlias = true
-                    style = Paint.Style.FILL
-                    setShadowLayer(4f, 0f, 0f, AndroidColor.BLACK)
-                }
 
                 if(!screenStar.star.properName.isNullOrEmpty()){
                     val infoText = screenStar.star.properName
@@ -192,7 +184,7 @@ fun StarOverlay(
                         " (${screenStar.star.constelation})"
                     }else ""
                     drawText(
-                        "$infoText$constelationText",
+                        "$infoText",
                         x + radius + 8f,
                         y + 10f,
                         textPaint
@@ -202,11 +194,19 @@ fun StarOverlay(
             }
         }
 
-        CONSTELLATION_LINES.forEach { line ->
-            val screenStar1 = visibleStars.find { it.star.hipId == line.starId1 }
-            val screenStar2 = visibleStars.find { it.star.hipId == line.starId2 }
+        constellationLines.forEach { line ->
+            val screenStar1 = visibleStars.find { it.star.hipId == line.starHipId1 }
+            val screenStar2 = visibleStars.find { it.star.hipId == line.starHipId2 }
 
             if(screenStar1 != null && screenStar2 != null){
+
+                val textPaint = Paint().apply {
+                    color = AndroidColor.CYAN // Un color celeste/cian las hace diferenciar de las estrellas individuales
+                    textSize = 45f            // Un poco más grande para que destaque como grupo
+                    isAntiAlias = true
+                    style = Paint.Style.FILL
+                    setShadowLayer(5f, 0f, 0f, AndroidColor.BLACK) // Contraste para exteriores
+                }
 
                 val x1 = centerX + (screenStar1.xPercent * canvasWidth)
                 val y1 = centerY - (screenStar1.yPercent * canvasHeight)
@@ -220,6 +220,19 @@ fun StarOverlay(
                     end = Offset(x2, y2),
                     strokeWidth = 4f
                 )
+                if(!drawnConstellations.contains(line.constellationName)){
+                    drawContext.canvas.nativeCanvas.apply {
+                        val midX = (x1 + x2) / 2
+                        val midY = (y1 + y2) / 2
+                        drawText(
+                            line.constellationName,
+                            midX + 8f,
+                            midY - 8f,
+                            textPaint
+                        )
+                    }
+                    drawnConstellations.add(line.constellationName)
+                }
             }
         }
     }

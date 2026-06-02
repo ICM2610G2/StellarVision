@@ -63,12 +63,14 @@ import com.example.stellarvision.common.AppText
 import com.example.stellarvision.common.CameraXControls
 import com.example.stellarvision.common.CameraXPhotoSheetContent
 import com.example.stellarvision.common.CameraXPreview
+import com.example.stellarvision.common.ConstellationLine
 import com.example.stellarvision.common.ScreenStar
 import com.example.stellarvision.common.StarOverlay
 import com.example.stellarvision.common.createLocationCallback
 import com.example.stellarvision.common.createLocationRequest
 import com.example.stellarvision.common.getCameraFov
 import com.example.stellarvision.common.getStarsFromHYG
+import com.example.stellarvision.common.loadConstellationLines
 import com.example.stellarvision.common.visibleStars
 import com.example.stellarvision.model.Star
 import com.example.stellarvision.navigation.AppScreens
@@ -104,6 +106,7 @@ fun CameraXScreen(
 
     var stars by remember { mutableStateOf<List<Star>>(emptyList()) }
     var visibleStars by remember { mutableStateOf<List<ScreenStar>>(emptyList())}
+    var constellationLines by remember { mutableStateOf<List<ConstellationLine>>(emptyList()) }
 
     val locationClient = LocationServices.getFusedLocationProviderClient(context)
     val locationRequest = createLocationRequest()
@@ -195,15 +198,18 @@ fun CameraXScreen(
         }
     }
 
-
-
     LaunchedEffect(Unit) {
-
         withContext(Dispatchers.IO) {
             stars = getStarsFromHYG(context)
         }
         if (!permissionState.status.isGranted) {
             permissionState.launchPermissionRequest()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.IO){
+            constellationLines = loadConstellationLines(context)
         }
     }
 
@@ -263,6 +269,7 @@ fun CameraXScreen(
             if(locationPermissionState.status.isGranted){
                 StarOverlay(
                     visibleStars = visibleStars,
+                    constellationLines = constellationLines,
                     modifier = Modifier.fillMaxSize()
                 )
             }
