@@ -209,7 +209,9 @@ fun Vista360(controller: NavController) {
                     altitude,
                     azimuth,
                     -pitch,
-                    utcTime = System.currentTimeMillis()
+                    utcTime = System.currentTimeMillis(),
+                    60.0f,
+                    40.0f
                 )
 
                 visibleStars = filtered

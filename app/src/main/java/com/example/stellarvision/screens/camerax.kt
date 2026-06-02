@@ -10,6 +10,7 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.net.Uri
 import android.os.Looper
+import android.util.Log
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -62,11 +63,14 @@ import com.example.stellarvision.common.AppText
 import com.example.stellarvision.common.CameraXControls
 import com.example.stellarvision.common.CameraXPhotoSheetContent
 import com.example.stellarvision.common.CameraXPreview
+import com.example.stellarvision.common.ConstellationLine
 import com.example.stellarvision.common.ScreenStar
 import com.example.stellarvision.common.StarOverlay
 import com.example.stellarvision.common.createLocationCallback
 import com.example.stellarvision.common.createLocationRequest
+import com.example.stellarvision.common.getCameraFov
 import com.example.stellarvision.common.getStarsFromHYG
+import com.example.stellarvision.common.loadConstellationLines
 import com.example.stellarvision.common.visibleStars
 import com.example.stellarvision.model.Star
 import com.example.stellarvision.navigation.AppScreens
@@ -102,6 +106,7 @@ fun CameraXScreen(
 
     var stars by remember { mutableStateOf<List<Star>>(emptyList()) }
     var visibleStars by remember { mutableStateOf<List<ScreenStar>>(emptyList())}
+    var constellationLines by remember { mutableStateOf<List<ConstellationLine>>(emptyList()) }
 
     val locationClient = LocationServices.getFusedLocationProviderClient(context)
     val locationRequest = createLocationRequest()
@@ -145,6 +150,16 @@ fun CameraXScreen(
         }
     }
 
+    val cameraController = remember(appContext) {
+        LifecycleCameraController(appContext).apply {
+            setEnabledUseCases(CameraController.IMAGE_CAPTURE)
+            cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+        }
+    }
+
+    var fovX by remember { mutableFloatStateOf(60.0f) }
+    var fovY by remember { mutableFloatStateOf(40.0f) }
+
     val permissionState = rememberPermissionState(Manifest.permission.CAMERA)
     val locationPermissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
 
@@ -152,6 +167,15 @@ fun CameraXScreen(
     val scaffoldState = rememberBottomSheetScaffoldState()
     val scope = rememberCoroutineScope()
     var message by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(cameraController) {
+        cameraController.cameraInfo?.let{cameraInfo ->
+            val (hfov, vfov) = getCameraFov(cameraInfo)
+            fovX = hfov
+            fovY = vfov
+            Log.d("CameraFOV", "FOV Horizontal: $fovX, Vertical: $fovY")
+        }
+    }
 
     LaunchedEffect(azimuth, pitch, latitude, stars) {
         if(abs(azimuth - lastAzimuth) > 0.5f || abs(pitch - lastPitch) > 0.5f){
@@ -163,24 +187,29 @@ fun CameraXScreen(
                     altitude,
                     azimuth,
                     -pitch,
-                    utcTime = System.currentTimeMillis()
+                    utcTime = System.currentTimeMillis(),
+                    fovX,
+                    fovY
                 )
-
                 visibleStars = filtered
                 lastAzimuth = azimuth
                 lastPitch = pitch
-
             }
         }
     }
 
     LaunchedEffect(Unit) {
-
         withContext(Dispatchers.IO) {
             stars = getStarsFromHYG(context)
         }
         if (!permissionState.status.isGranted) {
             permissionState.launchPermissionRequest()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.IO){
+            constellationLines = loadConstellationLines(context)
         }
     }
 
@@ -214,13 +243,6 @@ fun CameraXScreen(
         return
     }
 
-    val cameraController = remember(appContext) {
-        LifecycleCameraController(appContext).apply {
-            setEnabledUseCases(CameraController.IMAGE_CAPTURE)
-            cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-        }
-    }
-
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
         sheetPeekHeight = 0.dp,
@@ -247,6 +269,7 @@ fun CameraXScreen(
             if(locationPermissionState.status.isGranted){
                 StarOverlay(
                     visibleStars = visibleStars,
+                    constellationLines = constellationLines,
                     modifier = Modifier.fillMaxSize()
                 )
             }

@@ -2,6 +2,8 @@ package com.example.stellarvision.model
 
 data class Star(
     val id: String,
+    val hipId: String? = "",
+    val bfId: String? = "",
     val properName: String? = "",
     val rightAscension: Double,
     val declination: Double,
