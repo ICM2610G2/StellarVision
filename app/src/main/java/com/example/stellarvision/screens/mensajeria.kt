@@ -15,8 +15,8 @@ import androidx.compose.foundation.layout.padding
 import com.example.stellarvision.common.BottomBar
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.stellarvision.viewmodel.MensajeriaViewModel
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -32,36 +32,23 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.shouldShowRationale
+import com.google.firebase.auth.FirebaseAuth
 
 data class ContactoSimple(
     val nombre: String,
     val telefono: String
 )
 
-data class MensajeDummy(
-    val contenido: String,
-    val enviadoPorMi: Boolean
-)
-
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun Mensajeria(controller: NavController) {
+    val mensajeriaViewModel: MensajeriaViewModel = viewModel()
     val context = LocalContext.current
     val contactsPermissionState = rememberPermissionState(Manifest.permission.READ_CONTACTS)
 
     var contactos by remember { mutableStateOf<List<ContactoSimple>>(emptyList()) }
     var contactoSeleccionado by remember { mutableStateOf<ContactoSimple?>(null) }
     var mensaje by remember { mutableStateOf("") }
-
-    // Esto luego se reemplaza por mensajes reales de Firebase
-    var mensajes by remember {
-        mutableStateOf(
-            listOf(
-                MensajeDummy("Hola, vi tu publicación en StellarVision", false),
-                MensajeDummy("¡Gracias! Luego subo más observaciones", true)
-            )
-        )
-    }
 
     LaunchedEffect(contactsPermissionState.status.isGranted) {
         if (contactsPermissionState.status.isGranted) {
@@ -88,6 +75,15 @@ fun Mensajeria(controller: NavController) {
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.fillMaxWidth()
         )
+        mensajeriaViewModel.error?.let { error ->
+            Spacer(modifier = Modifier.height(8.dp))
+
+            AppText(
+                text = error,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -143,10 +139,7 @@ fun Mensajeria(controller: NavController) {
                                 .fillMaxWidth()
                                 .clickable {
                                     contactoSeleccionado = contacto
-
-                                    // Logica Firebase:
-                                    // Aquí luego se cargara la conversación del contacto seleccionado
-                                    // desde Firestore o Realtime Database.
+                                    mensajeriaViewModel.abrirChatConTelefono(contacto.telefono)
                                 }
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
@@ -193,18 +186,18 @@ fun Mensajeria(controller: NavController) {
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(mensajes) { item ->
+                    items(mensajeriaViewModel.mensajes) { item ->
                         ElevatedCard(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Column(modifier = Modifier.padding(12.dp)) {
                                 AppText(
-                                    text = if (item.enviadoPorMi) "Tú" else contactoSeleccionado!!.nombre,
+                                    text = if (item.senderId == FirebaseAuth.getInstance().currentUser?.uid) "Tú" else contactoSeleccionado!!.nombre,
                                     style = MaterialTheme.typography.labelMedium
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 AppText(
-                                    text = item.contenido,
+                                    text = item.text,
                                     style = MaterialTheme.typography.bodyMedium
                                 )
                             }
@@ -239,11 +232,7 @@ fun Mensajeria(controller: NavController) {
                         text = "Enviar",
                         onClick = {
                             if (mensaje.isNotBlank()) {
-                                // Logica Firebase:
-                                // Aquí luego se guardara el mensaje en Firestore o Realtime Database
-                                // asociado al usuario actual y al contacto seleccionado.
-
-                                mensajes = mensajes + MensajeDummy(mensaje, true)
+                                mensajeriaViewModel.enviarMensaje(mensaje)
                                 mensaje = ""
                             }
                         },
@@ -278,7 +267,9 @@ fun obtenerContactos(context: Context): List<ContactoSimple> {
 
         while (it.moveToNext()) {
             val nombre = it.getString(nameIndex) ?: "Sin nombre"
-            val telefono = it.getString(numberIndex) ?: ""
+            val telefono = (it.getString(numberIndex) ?: "")
+                .filter { c -> c.isDigit() }
+                .takeLast(10)
             if (telefono.isNotBlank()) {
                 lista.add(ContactoSimple(nombre, telefono))
             }

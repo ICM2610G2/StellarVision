@@ -20,6 +20,7 @@ googleid = "1.2.0"
 firebaseDatabase = "22.0.1"
 roomKtx = "2.8.4"
 foundationVersion = "1.11.2"
+playServicesMaps = "20.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -50,6 +51,7 @@ firebase-database = { group = "com.google.firebase", name = "firebase-database",
 
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
 androidx-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundationVersion" }
+play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
