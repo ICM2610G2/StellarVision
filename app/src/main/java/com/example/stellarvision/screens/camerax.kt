@@ -148,18 +148,10 @@ fun CameraXScreen(
     val permissionState = rememberPermissionState(Manifest.permission.CAMERA)
     val locationPermissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
 
-    var showStars by remember { mutableStateOf(false) }
-
     val photoUris by viewModel.photoUris.collectAsState()
     val scaffoldState = rememberBottomSheetScaffoldState()
     val scope = rememberCoroutineScope()
     var message by remember { mutableStateOf<String?>(null) }
-
-    LaunchedEffect(Unit) {
-        withContext(Dispatchers.IO) {
-            stars = getStarsFromHYG(context)
-        }
-    }
 
     LaunchedEffect(azimuth, pitch, latitude, stars) {
         if(abs(azimuth - lastAzimuth) > 0.5f || abs(pitch - lastPitch) > 0.5f){
@@ -182,8 +174,11 @@ fun CameraXScreen(
         }
     }
 
-
     LaunchedEffect(Unit) {
+
+        withContext(Dispatchers.IO) {
+            stars = getStarsFromHYG(context)
+        }
         if (!permissionState.status.isGranted) {
             permissionState.launchPermissionRequest()
         }
@@ -249,12 +244,12 @@ fun CameraXScreen(
                 modifier = Modifier.fillMaxSize()
             )
 
-            //if(locationPermissionState.status.isGranted){
+            if(locationPermissionState.status.isGranted){
                 StarOverlay(
                     visibleStars = visibleStars,
                     modifier = Modifier.fillMaxSize()
                 )
-            //}
+            }
 
             CameraXTopBar(
                 onBack = { controller.popBackStack() },
@@ -299,8 +294,8 @@ fun CameraXScreen(
                         context = context,
                         controller = cameraController,
                         onPhotoSaved = { uri ->
-                            viewModel.onPhotoSaved(uri)
-                            message = "Foto guardada. Puedes usarla en la publicación."
+                                viewModel.onPhotoSaved(uri)
+                                message = "Foto guardada. Puedes usarla en la publicación."
                         },
                         onError = { error ->
                             message = error
@@ -317,11 +312,6 @@ fun CameraXScreen(
             )
         }
     }
-    /*LaunchedEffect(locationPermissionState.status.isGranted) {
-        if(locationPermissionState.status.isGranted && !showStars){
-            showStars = true
-        }
-    }*/
 }
 
 @Composable
