@@ -47,8 +47,11 @@ class HomeViewModel : ViewModel() {
                 for (postSnapshot in snapshot.children) {
                     val id = postSnapshot.key ?: ""
                     val userName = postSnapshot.child("userName").getValue(String::class.java) ?: "Anónimo"
-                    val groupText = postSnapshot.child("groupText").getValue(String::class.java) ?: ""
-                    val body = postSnapshot.child("body").getValue(String::class.java) ?: ""
+
+                    val groupText = postSnapshot.child("constellation").getValue(String::class.java) ?: "General"
+                    val body = postSnapshot.child("description").getValue(String::class.java) ?: ""
+                    val title = postSnapshot.child("title").getValue(String::class.java) ?: "" // Si tu PostCard acepta título, lo usaremos como prefijo en el cuerpo
+
                     val imageUrl = postSnapshot.child("imageUrl").getValue(String::class.java)
                     val likes = postSnapshot.child("likes").getValue(Int::class.java) ?: 0
                     val comments = postSnapshot.child("comments").getValue(Int::class.java) ?: 0
@@ -58,7 +61,10 @@ class HomeViewModel : ViewModel() {
                         uSnapshot.key?.let { uid -> likedBy[uid] = true }
                     }
 
-                    lista.add(PublicacionData(id, userName, groupText, body, imageUrl, likes, comments, likedBy))
+
+                    val cuerpoCompleto = if (title.isNotBlank()) "✨ $title\n\n$body" else body
+
+                    lista.add(PublicacionData(id, userName, "🌌 Constelación: $groupText", cuerpoCompleto, imageUrl, likes, comments, likedBy))
                 }
                 _publicaciones.value = lista.reversed()
             }
