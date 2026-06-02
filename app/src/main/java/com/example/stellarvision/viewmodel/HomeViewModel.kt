@@ -50,7 +50,7 @@ class HomeViewModel : ViewModel() {
 
                     val groupText = postSnapshot.child("constellation").getValue(String::class.java) ?: "General"
                     val body = postSnapshot.child("description").getValue(String::class.java) ?: ""
-                    val title = postSnapshot.child("title").getValue(String::class.java) ?: "" // Si tu PostCard acepta título, lo usaremos como prefijo en el cuerpo
+                    val title = postSnapshot.child("title").getValue(String::class.java) ?: ""
 
                     val imageUrl = postSnapshot.child("imageUrl").getValue(String::class.java)
                     val likes = postSnapshot.child("likes").getValue(Int::class.java) ?: 0
