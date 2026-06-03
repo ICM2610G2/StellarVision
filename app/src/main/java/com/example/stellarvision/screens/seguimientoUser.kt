@@ -197,7 +197,7 @@ fun SeguimientoUsuarioScreen(
                         title = state.trackedUser?.username ?: "Usuario seguido",
                         snippet = "Ubicación en tiempo real",
                         icon = BitmapDescriptorFactory.defaultMarker(
-                            BitmapDescriptorFactory.HUE_RED
+                            BitmapDescriptorFactory.HUE_VIOLET
                         )
                     )
                 }
@@ -210,7 +210,7 @@ fun SeguimientoUsuarioScreen(
                         title = "Mi ubicación",
                         snippet = "Usuario que hace seguimiento",
                         icon = BitmapDescriptorFactory.defaultMarker(
-                            BitmapDescriptorFactory.HUE_VIOLET
+                            BitmapDescriptorFactory.HUE_RED
                         )
                     )
                 }
@@ -321,4 +321,40 @@ fun StartRealtimeLocationUpdates(
             }
         }
     }
+}
+
+@Composable
+fun GlobalUserLocationPublisher(
+    viewModel: SeguimientoUserViewModel = viewModel()
+) {
+    val context = LocalContext.current
+
+    var hasLocationPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        hasLocationPermission = granted
+    }
+
+    LaunchedEffect(Unit) {
+        if (!hasLocationPermission) {
+            permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+    }
+
+    StartRealtimeLocationUpdates(
+        context = context,
+        hasLocationPermission = hasLocationPermission,
+        onLocationChanged = { location ->
+            viewModel.publishMyLocationIfNeeded(location)
+        }
+    )
 }

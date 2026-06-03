@@ -34,6 +34,7 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.shouldShowRationale
 import com.google.firebase.auth.FirebaseAuth
 import com.example.stellarvision.navigation.AppScreens
+import androidx.compose.material3.CardDefaults
 
 data class ContactoSimple(
     val nombre: String,
@@ -46,6 +47,7 @@ fun Mensajeria(controller: NavController) {
     val mensajeriaViewModel: MensajeriaViewModel = viewModel()
     val context = LocalContext.current
     val contactsPermissionState = rememberPermissionState(Manifest.permission.READ_CONTACTS)
+    var busqueda by remember { mutableStateOf("") }
 
     var contactos by remember { mutableStateOf<List<ContactoSimple>>(emptyList()) }
     var contactoSeleccionado by remember { mutableStateOf<ContactoSimple?>(null) }
@@ -64,7 +66,7 @@ fun Mensajeria(controller: NavController) {
             .padding(32.dp)
     ) {
         AppText(
-            text = "Mensajería",
+            text = contactoSeleccionado?.nombre ?: "Mensajería",
             style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier.fillMaxWidth()
         )
@@ -72,7 +74,8 @@ fun Mensajeria(controller: NavController) {
         Spacer(modifier = Modifier.height(8.dp))
 
         AppText(
-            text = "Selecciona un contacto para iniciar una conversación relacionada con StellarVision.",
+            text = contactoSeleccionado?.telefono
+                ?: "Selecciona un contacto para iniciar una conversación relacionada con StellarVision.",
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.fillMaxWidth()
         )
@@ -129,12 +132,25 @@ fun Mensajeria(controller: NavController) {
                     style = MaterialTheme.typography.titleMedium
                 )
 
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = busqueda,
+                    onValueChange = { busqueda = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { AppText("Buscar contacto") }
+                )
+
                 Spacer(modifier = Modifier.height(12.dp))
+
+                val contactosFiltrados = contactos.filter {
+                    it.nombre.contains(busqueda, ignoreCase = true)
+                }
 
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(contactos) { contacto ->
+                    items(contactosFiltrados) { contacto ->
                         ElevatedCard(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -158,22 +174,6 @@ fun Mensajeria(controller: NavController) {
                     }
                 }
             } else {
-                ElevatedCard(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        AppText(
-                            text = contactoSeleccionado!!.nombre,
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        AppText(
-                            text = contactoSeleccionado!!.telefono,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                }
-
                 Spacer(modifier = Modifier.height(16.dp))
 
                 AppText(
@@ -188,19 +188,50 @@ fun Mensajeria(controller: NavController) {
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(mensajeriaViewModel.mensajes) { item ->
-                        ElevatedCard(
-                            modifier = Modifier.fillMaxWidth()
+
+                        val esMio =
+                            item.senderId == FirebaseAuth.getInstance().currentUser?.uid
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement =
+                                if (esMio)
+                                    Arrangement.End
+                                else
+                                    Arrangement.Start
                         ) {
-                            Column(modifier = Modifier.padding(12.dp)) {
-                                AppText(
-                                    text = if (item.senderId == FirebaseAuth.getInstance().currentUser?.uid) "Tú" else contactoSeleccionado!!.nombre,
-                                    style = MaterialTheme.typography.labelMedium
+
+                            ElevatedCard(
+                                modifier = Modifier.fillMaxWidth(0.8f),
+                                colors = CardDefaults.elevatedCardColors(
+                                    containerColor =
+                                        if (esMio)
+                                            MaterialTheme.colorScheme.primaryContainer
+                                        else
+                                            MaterialTheme.colorScheme.surfaceVariant
                                 )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                AppText(
-                                    text = item.text,
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
+                            ) {
+
+                                Column(
+                                    modifier = Modifier.padding(12.dp)
+                                ) {
+
+                                    AppText(
+                                        text =
+                                            if (esMio)
+                                                "Tú"
+                                            else
+                                                contactoSeleccionado!!.nombre,
+                                        style = MaterialTheme.typography.labelMedium
+                                    )
+
+                                    Spacer(modifier = Modifier.height(4.dp))
+
+                                    AppText(
+                                        text = item.text,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
                             }
                         }
                     }

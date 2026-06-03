@@ -87,6 +87,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.math.abs
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.rememberLauncherForActivityResult
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
@@ -167,6 +169,18 @@ fun CameraXScreen(
     val scaffoldState = rememberBottomSheetScaffoldState()
     val scope = rememberCoroutineScope()
     var message by remember { mutableStateOf<String?>(null) }
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            viewModel.onPhotoSaved(uri)
+            message = "Imagen seleccionada de la galería."
+            navigateToCreatePublication(controller, uri)
+        } else {
+            message = "No seleccionaste ninguna imagen."
+        }
+    }
 
     LaunchedEffect(cameraController) {
         cameraController.cameraInfo?.let{cameraInfo ->
@@ -312,13 +326,16 @@ fun CameraXScreen(
                 onOpenPhotos = {
                     scope.launch { scaffoldState.bottomSheetState.expand() }
                 },
+                onPickFromGallery = {
+                    galleryLauncher.launch("image/*")
+                },
                 onTakePhoto = {
                     takePhoto(
                         context = context,
                         controller = cameraController,
                         onPhotoSaved = { uri ->
-                                viewModel.onPhotoSaved(uri)
-                                message = "Foto guardada. Puedes usarla en la publicación."
+                            viewModel.onPhotoSaved(uri)
+                            message = "Foto guardada. Puedes usarla en la publicación."
                         },
                         onError = { error ->
                             message = error
@@ -361,16 +378,6 @@ fun CameraXTopBar(
             )
         }
 
-        SmallFloatingActionButton(
-            onClick = onSwitchCamera,
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
-            contentColor = MaterialTheme.colorScheme.onSurface
-        ) {
-            Icon(
-                imageVector = Icons.Default.Cameraswitch,
-                contentDescription = "Cambiar cámara"
-            )
-        }
     }
 }
 

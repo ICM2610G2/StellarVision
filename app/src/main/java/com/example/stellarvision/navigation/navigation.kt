@@ -23,6 +23,7 @@ import com.example.stellarvision.viewmodel.RegisterViewModel
 import com.example.stellarvision.screens.CameraXScreen
 import com.example.stellarvision.screens.ComentariosScreen
 import com.example.stellarvision.screens.SeguimientoUsuarioScreen
+import com.example.stellarvision.screens.GlobalUserLocationPublisher
 
 enum class AppScreens {
    Login,
@@ -54,6 +55,7 @@ fun Navigation(){
             }
         }
     }
+    GlobalUserLocationPublisher()
     NavHost(navController, AppScreens.Login.name) {
         composable(AppScreens.Login.name) {
             Login(navController)

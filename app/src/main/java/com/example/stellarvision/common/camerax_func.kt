@@ -43,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import androidx.compose.material.icons.filled.PhotoLibrary
 
 @Composable
 fun CameraXControls(
@@ -50,7 +51,8 @@ fun CameraXControls(
     onTakePhoto: () -> Unit,
     onUseLastPhoto: () -> Unit,
     canUsePhoto: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onPickFromGallery: () -> Unit
 ) {
     Column(
         modifier = modifier
@@ -97,6 +99,17 @@ fun CameraXControls(
                     Icon(
                         imageVector = Icons.Default.Photo,
                         contentDescription = "Abrir fotos tomadas"
+                    )
+                }
+
+                FloatingActionButton(
+                    onClick = onPickFromGallery,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.PhotoLibrary,
+                        contentDescription = "Seleccionar foto de galería"
                     )
                 }
 
