@@ -322,3 +322,39 @@ fun StartRealtimeLocationUpdates(
         }
     }
 }
+
+@Composable
+fun GlobalUserLocationPublisher(
+    viewModel: SeguimientoUserViewModel = viewModel()
+) {
+    val context = LocalContext.current
+
+    var hasLocationPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        hasLocationPermission = granted
+    }
+
+    LaunchedEffect(Unit) {
+        if (!hasLocationPermission) {
+            permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+    }
+
+    StartRealtimeLocationUpdates(
+        context = context,
+        hasLocationPermission = hasLocationPermission,
+        onLocationChanged = { location ->
+            viewModel.publishMyLocationIfNeeded(location)
+        }
+    )
+}
