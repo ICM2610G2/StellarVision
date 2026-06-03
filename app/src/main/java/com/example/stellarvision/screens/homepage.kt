@@ -38,9 +38,8 @@ fun Homepage(
 ) {
 
     val listaPublicaciones by homeViewModel.publicaciones.collectAsState()
-
-
     val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: "anonimo"
+    val currentUserName = FirebaseAuth.getInstance().currentUser?.displayName ?: "Un astrónomo"
 
     BottomBar(controller, iconsNavBar) { padding ->
         var selected by rememberSaveable { mutableIntStateOf(1) }
@@ -77,7 +76,7 @@ fun Homepage(
                             comments = publicacion.comments,
                             isLiked = yaTieneLike,
                             onLikeClick = {
-                                homeViewModel.conmutarLike(publicacion.id, currentUserId)
+                                homeViewModel.conmutarLike(publicacion.id, currentUserId, currentUserName)
                             },
                             onCommentClick = {
                                 controller.navigate("comentarios/${publicacion.id}")

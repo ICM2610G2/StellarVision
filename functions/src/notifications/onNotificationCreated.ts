@@ -26,7 +26,7 @@ export const onNotificationCreated = onValueCreated(
     } else if (notificationData.type === "comment") {
       title = `${notificationData.fromUsername} comentó tu post`;
       body = "Toca para leer el comentario.";
-    } else if (notificationData.type === "message") {
+    } else if (notificationData.type === "chat") {
       title = `Nuevo mensaje de ${notificationData.fromUsername}`;
       body = "Toca para responder.";
     }
