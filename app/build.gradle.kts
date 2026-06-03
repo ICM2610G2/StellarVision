@@ -12,6 +12,11 @@ android {
     }
 
     defaultConfig {
+        buildConfigField(
+            "String",
+            "MAPS_API_KEY",
+            "\"DEFAULT_API_KEY\""
+        )
         applicationId = "com.example.stellarvision"
         minSdk = 24
         targetSdk = 36
