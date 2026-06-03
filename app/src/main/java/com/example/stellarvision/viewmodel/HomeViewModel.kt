@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 data class PublicacionData(
     val id: String = "",
+    val userId: String = "",
     val userName: String = "Astrónomo",
     val groupText: String = "",
     val body: String = "",
@@ -32,7 +33,6 @@ class HomeViewModel : ViewModel() {
     private val _publicaciones = MutableStateFlow<List<PublicacionData>>(emptyList())
     val publicaciones: StateFlow<List<PublicacionData>> = _publicaciones
 
-
     private val _comentarios = MutableStateFlow<List<ComentarioData>>(emptyList())
     val comentarios: StateFlow<List<ComentarioData>> = _comentarios
 
@@ -46,6 +46,7 @@ class HomeViewModel : ViewModel() {
                 val lista = mutableListOf<PublicacionData>()
                 for (postSnapshot in snapshot.children) {
                     val id = postSnapshot.key ?: ""
+                    val userId = postSnapshot.child("userId").getValue(String::class.java) ?: ""
                     val userName = postSnapshot.child("userName").getValue(String::class.java) ?: "Anónimo"
 
                     val groupText = postSnapshot.child("constellation").getValue(String::class.java) ?: "General"
@@ -61,10 +62,9 @@ class HomeViewModel : ViewModel() {
                         uSnapshot.key?.let { uid -> likedBy[uid] = true }
                     }
 
-
                     val cuerpoCompleto = if (title.isNotBlank()) "✨ $title\n\n$body" else body
 
-                    lista.add(PublicacionData(id, userName, "🌌 Constelación: $groupText", cuerpoCompleto, imageUrl, likes, comments, likedBy))
+                    lista.add(PublicacionData(id, userId, userName, "🌌 Constelación: $groupText", cuerpoCompleto, imageUrl, likes, comments, likedBy))
                 }
                 _publicaciones.value = lista.reversed()
             }
@@ -72,8 +72,7 @@ class HomeViewModel : ViewModel() {
             override fun onCancelled(error: DatabaseError) {}
         })
     }
-
-    fun conmutarLike(publicacionId: String, currentUserId: String) {
+    fun conmutarLike(publicacionId: String, currentUserId: String, miNombreUsuario: String) {
         if (currentUserId == "anonimo") return
 
         val postRef = database.child(publicacionId)
@@ -82,6 +81,7 @@ class HomeViewModel : ViewModel() {
             if (snapshot.exists()) {
                 val likedByNode = snapshot.child("likedBy").child(currentUserId)
                 val likesActuales = snapshot.child("likes").getValue(Int::class.java) ?: 0
+                val idPostOwner = snapshot.child("userId").getValue(String::class.java) ?: ""
 
                 if (likedByNode.exists()) {
                     likedByNode.ref.removeValue().addOnSuccessListener {
@@ -90,6 +90,16 @@ class HomeViewModel : ViewModel() {
                 } else {
                     likedByNode.ref.setValue(true).addOnSuccessListener {
                         postRef.child("likes").setValue(likesActuales + 1)
+                        if (idPostOwner.isNotBlank() && idPostOwner != currentUserId) {
+                            val userRef = FirebaseDatabase.getInstance().getReference("users").child(currentUserId)
+                            userRef.child("username").get().addOnSuccessListener { userSnapshot ->
+                                val nombre = userSnapshot.getValue(String::class.java) ?: "Un astrónomo"
+
+                                enviarNotificacionAHub(idPostOwner, nombre, publicacionId, "like")
+                            }.addOnFailureListener {
+                                enviarNotificacionAHub(idPostOwner, "Un astrónomo", publicacionId, "like")
+                            }
+                        }
                     }
                 }
             }
@@ -119,12 +129,10 @@ class HomeViewModel : ViewModel() {
             })
     }
 
-
     fun agregarComentario(publicacionId: String, texto: String, nombreUsuario: String) {
         if (texto.isBlank()) return
 
         val postRef = database.child(publicacionId)
-
         val nuevoComentarioRef = postRef.child("commentsList").push()
 
         val comentarioMap = mapOf(
@@ -134,11 +142,29 @@ class HomeViewModel : ViewModel() {
         )
 
         nuevoComentarioRef.setValue(comentarioMap).addOnSuccessListener {
-
-            postRef.child("comments").get().addOnSuccessListener { snapshot ->
-                val comentariosActuales = snapshot.getValue(Int::class.java) ?: 0
-                postRef.child("comments").setValue(comentariosActuales + 1)
+            postRef.get().addOnSuccessListener { postSnapshot ->
+                if (postSnapshot.exists()) {
+                    val comentariosActuales = postSnapshot.child("comments").getValue(Int::class.java) ?: 0
+                    postRef.child("comments").setValue(comentariosActuales + 1)
+                    val idPostOwner = postSnapshot.child("userId").getValue(String::class.java) ?: ""
+                    val miUidActual = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
+                    if (idPostOwner.isNotBlank() && idPostOwner != miUidActual) {
+                        val nombreEmisorValido = nombreUsuario.ifBlank {"Un astrónomo"}
+                        enviarNotificacionAHub(idPostOwner, nombreEmisorValido, publicacionId, "comment")
+                    }
+                }
             }
         }
+    }
+    private fun enviarNotificacionAHub(idReceptor: String, emisor: String, postId: String, tipo: String) {
+        val notificationsRoot = FirebaseDatabase.getInstance().getReference("notifications")
+        val nuevaNotiRef = notificationsRoot.child(idReceptor).push()
+
+        val datosNotificacion = mapOf(
+            "fromUsername" to emisor,
+            "postId" to postId,
+            "type" to tipo
+        )
+        nuevaNotiRef.setValue(datosNotificacion)
     }
 }

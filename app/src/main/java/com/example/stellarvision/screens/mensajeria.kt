@@ -264,7 +264,8 @@ fun Mensajeria(controller: NavController) {
                         text = "Enviar",
                         onClick = {
                             if (mensaje.isNotBlank()) {
-                                mensajeriaViewModel.enviarMensaje(mensaje)
+                                val miNombre = FirebaseAuth.getInstance().currentUser?.displayName ?: "Astrónomo"
+                                mensajeriaViewModel.enviarMensaje(mensaje, miNombre)
                                 mensaje = ""
                             }
                         },

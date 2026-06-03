@@ -25,7 +25,7 @@ class ChatRepository(
         firebase.removeMessagesListener(chatId, listener)
     }
 
-    fun sendMessage(chatId: String, senderId: String, text: String) {
-        firebase.sendMessage(chatId, senderId, text)
+    fun sendMessage(chatId: String, senderId: String, text: String, receiverId: String, senderName: String) {
+        firebase.sendMessage(chatId, senderId, text, receiverId, senderName)
     }
 }

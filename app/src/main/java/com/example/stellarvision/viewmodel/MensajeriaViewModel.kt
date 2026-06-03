@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.example.stellarvision.data.repository.ChatRepository
 import com.example.stellarvision.model.Mensaje
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
 class MensajeriaViewModel : ViewModel() {
@@ -78,9 +79,10 @@ class MensajeriaViewModel : ViewModel() {
         }
     }
 
-    fun enviarMensaje(text: String) {
+    fun enviarMensaje(text: String, miNombreUsuario: String) {
         val currentUid = auth.currentUser?.uid ?: return
         val currentChat = chatId
+        val idDestinatario = selectedUserId ?: ""
 
         if (currentChat == null) {
             error = "Primero selecciona un contacto registrado"
@@ -89,7 +91,15 @@ class MensajeriaViewModel : ViewModel() {
 
         if (text.isBlank()) return
 
-        repository.sendMessage(currentChat, currentUid, text.trim())
+        val userRef = FirebaseDatabase.getInstance().getReference("users").child(currentUid)
+        userRef.child("username").get().addOnSuccessListener { userSnapshot ->
+            val nombre = userSnapshot.getValue(String::class.java)
+                ?: miNombreUsuario.ifBlank { "Un astrónomo" }
+            repository.sendMessage(chatId = currentChat, senderId = currentUid, text = text.trim(), receiverId = idDestinatario, senderName = nombre)
+        }.addOnFailureListener {
+            val nombreRespaldo = miNombreUsuario.ifBlank { "Un astrónomo" }
+            repository.sendMessage(currentChat, currentUid, text.trim(), idDestinatario, nombreRespaldo)
+        }
     }
 
     override fun onCleared() {

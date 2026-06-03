@@ -1,11 +1,15 @@
 package com.example.stellarvision.viewmodel
 
 import androidx.lifecycle.ViewModel
+import com.example.stellarvision.auth
+import com.example.stellarvision.database
 import com.example.stellarvision.common.validEmailAddress
 import com.example.stellarvision.common.validPassword
 import com.example.stellarvision.common.validUsername
+import com.example.stellarvision.data.firebase.FCMTokenDataSource
 import com.example.stellarvision.data.repository.AuthRepository
 import com.example.stellarvision.model.RegisterState
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -152,8 +156,6 @@ class RegisterViewModel : ViewModel(){
         if(!validateForm(email, password, username, confirmPassword, phoneNumber)){
             return
         }
-
-
         repository.registerWithDatabase(
             email = email,
             password = password,
@@ -161,11 +163,36 @@ class RegisterViewModel : ViewModel(){
             phoneNumber = phoneNumber,
             profilePictureUrl = profilePictureUrl,
             onSuccess = {
+                saveUser(email, username, phoneNumber, profilePictureUrl)
                 onSuccess()
             },
             onError = {
                 onError("Error al completar el registro en Firebase")
             }
         )
+    }
+
+    private fun saveUser(email : String, username : String, phoneNumber: String, profilePictureUrl: String) {
+        val uid = auth.currentUser?.uid ?: return
+
+        FirebaseMessaging.getInstance().token
+            .addOnCompleteListener { task ->
+                val token = if (task.isSuccessful) task.result else null
+
+                val newUser = mutableMapOf(
+                    "uid" to uid,
+                    "email" to email,
+                    "username" to username,
+                    "phoneNumber" to phoneNumber,
+                    "profilePictureUrl" to profilePictureUrl
+                )
+
+                if (token != null) {
+                    newUser["fcmToken"] = token
+                }
+
+                val myRef = database.getReference("users/${uid}")
+                myRef.setValue(newUser)
+            }
     }
 }

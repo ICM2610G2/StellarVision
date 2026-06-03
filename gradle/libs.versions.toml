@@ -19,6 +19,7 @@ credentialsPlayServicesAuth = "1.6.0"
 googleid = "1.2.0"
 firebaseDatabase = "22.0.1"
 roomKtx = "2.8.4"
+firebaseMessaging = "25.0.2"
 foundationVersion = "1.11.2"
 playServicesMaps = "20.0.0"
 secretsGradlePlugin = "2.0.1"
@@ -55,6 +56,7 @@ firebase-database = { group = "com.google.firebase", name = "firebase-database",
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
 androidx-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundationVersion" }
 play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
+firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging", version.ref = "firebaseMessaging" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

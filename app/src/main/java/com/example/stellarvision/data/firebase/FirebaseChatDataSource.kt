@@ -9,6 +9,7 @@ class FirebaseChatDataSource {
 
     private fun chatsRef() = database.getReference("chats")
     private fun usersRef() = database.getReference("users")
+    private fun notificationsRef() = database.getReference("notifications")
 
     private fun normalizePhone(phone: String): String {
         val digits = phone.filter { it.isDigit() }
@@ -86,18 +87,34 @@ class FirebaseChatDataSource {
         chatsRef().child(chatId).child("messages").removeEventListener(listener)
     }
 
-    fun sendMessage(chatId: String, senderId: String, text: String) {
+    fun sendMessage(chatId: String, senderId: String, text: String, receiverId: String = "", senderName: String = "Alguien") {
         val ref = chatsRef().child(chatId).child("messages").push()
 
         val mensaje = Mensaje(
             id = ref.key ?: "",
             senderId = senderId,
             text = text,
-            timestamp = System.currentTimeMillis()
+            timestamp = System.currentTimeMillis(),
+
         )
 
-        ref.setValue(mensaje)
+        ref.setValue(mensaje).addOnSuccessListener {
 
-        // Logica Firebase Cloud Messaging
+            if (receiverId.isNotBlank() && receiverId != senderId) {
+                val nuevaNotiRef = notificationsRef().child(receiverId).push()
+
+                val datosNotificacion = mapOf(
+                    "fromUsername" to senderName,
+                    "chatId" to chatId,
+                    "type" to "chat"
+                )
+                nuevaNotiRef.setValue(datosNotificacion).addOnFailureListener { error ->
+                    println("Error al colgar la notificación push de chat: ${error.message}")
+                }
+            }
+        }.addOnFailureListener { error ->
+            println("Error al guardar el mensaje de chat: ${error.message}")
+        }
+
     }
 }
