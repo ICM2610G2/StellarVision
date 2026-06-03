@@ -1,7 +1,6 @@
 package com.example.stellarvision.screens
 
 import android.widget.Toast
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,7 +11,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
@@ -23,7 +21,6 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.stellarvision.common.AppButton
 import com.example.stellarvision.common.AppText
-import com.example.stellarvision.common.AppTextField
 import com.example.stellarvision.navigation.AppScreens
 import com.example.stellarvision.viewmodel.PublicacionViewModel
 
@@ -43,7 +40,9 @@ fun CrearPublicacion(
     var titulo by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
     var constelacion by remember { mutableStateOf("") }
-    var privacidadUbicacion by remember { mutableStateOf("NINGUNA") }
+
+
+    var otraConstelacionTexto by remember { mutableStateOf("") }
 
     val opcionesConstelacion = listOf(
         "Orión",
@@ -54,10 +53,15 @@ fun CrearPublicacion(
         "Otra"
     )
 
+
+    val constelacionFinal = if (constelacion == "Otra") otraConstelacionTexto else constelacion
+
+
     val formularioCompleto =
         titulo.isNotBlank() &&
                 descripcion.isNotBlank() &&
                 constelacion.isNotBlank() &&
+                (constelacion != "Otra" || otraConstelacionTexto.isNotBlank()) &&
                 imageUri != null &&
                 !isLoading
 
@@ -203,47 +207,20 @@ fun CrearPublicacion(
             }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
 
-        AppText(
-            text = "Privacidad de ubicación",
-            style = MaterialTheme.typography.titleSmall,
-            textAlign = TextAlign.Start,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            listOf("EXACTA", "PARCIAL", "NINGUNA").forEach { opcion ->
-                ElevatedCard(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable { if (!isLoading) privacidadUbicacion = opcion },
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        AppText(
-                            text = if (privacidadUbicacion == opcion) "✓ $opcion" else opcion,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = if (privacidadUbicacion == opcion)
-                                MaterialTheme.colorScheme.primary
-                            else
-                                MaterialTheme.colorScheme.onBackground
-                        )
-                    }
-                }
-            }
+        if (constelacion == "Otra") {
+            Spacer(modifier = Modifier.height(12.dp))
+            OutlinedTextField(
+                value = otraConstelacionTexto,
+                onValueChange = { if (!isLoading) otraConstelacionTexto = it },
+                label = { Text("¿Cuál constelación es?") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp)
+            )
         }
+
+
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -257,8 +234,8 @@ fun CrearPublicacion(
                         viewModel.subirPublicacion(
                             title = titulo,
                             description = descripcion,
-                            constellation = constelacion,
-                            locationPrivacy = privacidadUbicacion,
+                            constellation = constelacionFinal,
+                            locationPrivacy = "NINGUNA",
                             imageUri = imageUri,
                             onSuccess = {
                                 Toast.makeText(context, "¡Publicado con éxito!", Toast.LENGTH_LONG).show()
