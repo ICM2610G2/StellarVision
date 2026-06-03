@@ -57,8 +57,6 @@ fun Publicacion(controller: NavController) {
     val context = LocalContext.current
     val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
 
-
-
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
@@ -166,10 +164,20 @@ fun Publicacion(controller: NavController) {
                     text = "Cámara",
                     onClick = {
                         if (cameraPermissionState.status.isGranted) {
+
+                            val carpetaCamara = File(context.cacheDir, "camera_photos")
+
+
+                            if (!carpetaCamara.exists()) {
+                                carpetaCamara.mkdirs()
+                            }
+
+
                             val file = File(
-                                context.filesDir,
+                                carpetaCamara,
                                 "camera_${System.currentTimeMillis()}.jpg"
                             )
+
 
                             val newUri = FileProvider.getUriForFile(
                                 context,

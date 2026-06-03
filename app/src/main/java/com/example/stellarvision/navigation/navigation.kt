@@ -20,6 +20,10 @@ import com.example.stellarvision.screens.Vista360Screen
 import com.example.stellarvision.screens.Vistalocalizacion
 import com.example.stellarvision.viewmodel.LoginViewModel
 import com.example.stellarvision.viewmodel.RegisterViewModel
+import com.example.stellarvision.screens.CameraXScreen
+import com.example.stellarvision.screens.ComentariosScreen
+import com.example.stellarvision.screens.SeguimientoUsuarioScreen
+import com.example.stellarvision.screens.GlobalUserLocationPublisher
 
 enum class AppScreens {
    Login,
@@ -27,7 +31,9 @@ enum class AppScreens {
     Register2,
     Homepage,
     Mapa,
+    SeguimientoUsuario,
     Vista360,
+    CameraX,
     Publicacion,
     Vistalocalizacion,
     Mensajeria,
@@ -49,6 +55,7 @@ fun Navigation(){
             }
         }
     }
+    GlobalUserLocationPublisher()
     NavHost(navController, AppScreens.Login.name) {
         composable(AppScreens.Login.name) {
             Login(navController)
@@ -65,6 +72,14 @@ fun Navigation(){
         composable(AppScreens.Mapa.name) {
             Mapa(navController)
         }
+        composable("${AppScreens.SeguimientoUsuario.name}/{userId}") { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId") ?: return@composable
+
+            SeguimientoUsuarioScreen(
+                navController = navController,
+                userId = userId
+            )
+        }
         composable(AppScreens.Publicacion.name) {
             Publicacion(navController)
         }
@@ -77,6 +92,9 @@ fun Navigation(){
         composable(AppScreens.Vista360.name){
             Vista360Screen(navController)
         }
+        composable(AppScreens.CameraX.name) {
+            CameraXScreen(navController)
+        }
         composable(AppScreens.Perfil.name) {
             Perfil(navController)
         }
@@ -86,6 +104,13 @@ fun Navigation(){
         composable("poi/{id}") { backStackEntry ->
             val id = backStackEntry.arguments?.getString("id") ?: return@composable
             PointerDetail(navController, poiId = id)
+        }
+        composable("comentarios/{publicacionId}") { backStackEntry ->
+            val pubId = backStackEntry.arguments?.getString("publicacionId") ?: return@composable
+            ComentariosScreen(
+                publicacionId = pubId,
+                controller = navController
+            )
         }
     }
 }

@@ -11,6 +11,10 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Looper
 import android.util.Log
+import androidx.camera.core.CameraSelector
+import androidx.camera.view.CameraController
+import androidx.camera.view.LifecycleCameraController
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,12 +22,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Star
@@ -74,14 +80,40 @@ import com.google.android.gms.location.Priority
 import kotlin.math.abs
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
-
+import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.stellarvision.common.AppFab
+import com.example.stellarvision.common.CameraXControls
+import com.example.stellarvision.common.CameraXPhotoSheetContent
+import com.example.stellarvision.common.CameraXPreview
+import com.example.stellarvision.common.ScreenStar
+import com.example.stellarvision.common.StarOverlay
+import com.example.stellarvision.navigation.AppScreens
+import com.example.stellarvision.ui.theme.Purple40
+import com.example.stellarvision.ui.theme.Surface
+import com.example.stellarvision.viewmodel.CameraXViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import com.example.stellarvision.viewmodel.WeatherUiState
+import com.example.stellarvision.viewmodel.WeatherViewModel
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalTime::class)
 @Composable
-fun Vista360(controller: NavController) {
+fun Vista360(
+    controller: NavController,
+    weatherViewModel: WeatherViewModel = viewModel()) {
     var stars by remember { mutableStateOf<List<Star>>(emptyList()) }
-    var visibleStars by remember { mutableStateOf<List<Star>>(emptyList())}
+    var visibleStars by remember { mutableStateOf<List<ScreenStar>>(emptyList())}
     val context = LocalContext.current
+    val weatherState by weatherViewModel.state.collectAsState()
 
     var x_rot by remember { mutableFloatStateOf(0.0F) }
     var y_rot by remember { mutableFloatStateOf(0.0F) }
@@ -115,6 +147,16 @@ fun Vista360(controller: NavController) {
             altitude = it.altitude
         }
     }
+
+    LaunchedEffect(latitude, longitude) {
+        if (latitude != 0.0 || longitude != 0.0) {
+            weatherViewModel.loadCurrentWeather(
+                latitude = latitude,
+                longitude = longitude
+            )
+        }
+    }
+
     val lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
     val rotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
     val pressureSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE)
@@ -186,7 +228,9 @@ fun Vista360(controller: NavController) {
                     altitude,
                     azimuth,
                     -pitch,
-                    utcTime = System.currentTimeMillis()
+                    utcTime = System.currentTimeMillis(),
+                    60.0f,
+                    40.0f
                 )
 
                 visibleStars = filtered
@@ -234,12 +278,20 @@ fun Vista360(controller: NavController) {
             //Text("El valor de luz detectado por el sensor es: ${lightLevel}", fontSize = 20.sp)
             Text("Test presion atmos: $testPressure ($tieneSensor)", fontSize = 20.sp)*/
 
-            Compass(azimuth)
-
+            WeatherPanel(
+                weatherState = weatherState,
+                onRetry = {
+                    weatherViewModel.loadCurrentWeather(
+                        latitude = latitude,
+                        longitude = longitude,
+                        force = true
+                    )
+                }
+            )
         }
 
         LazyColumn(modifier = Modifier.weight(6F)) {
-            items(visibleStars.sortedBy { it.visualMagnitude }) { star ->
+            items(visibleStars.sortedBy { it.star.visualMagnitude }) { star ->
                 StarInfo(star)
             }
         }
@@ -249,16 +301,127 @@ fun Vista360(controller: NavController) {
 }
 
 @Composable
-fun StarInfo(star: Star){
+fun StarInfo(Sstar: ScreenStar){
     Column(
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
     ) {
-        MyRow("Nombre: ${star.properName}, Constelación: ${star.constelation}", Icons.Default.Star)
-        MyRow("Es ${star.luminosity?.toInt()} veces mas brillante que el sol!", Icons.Default.Info)
-        MyRow("Se encuentra a ${star.distance?.times(3262)?.toInt()} años luz de nosotros!", Icons.Default.Info)
+        MyRow("Nombre: ${Sstar.star.properName}, Constelación: ${Sstar.star.constelation}", Icons.Default.Star)
+        MyRow("Es ${Sstar.star.luminosity?.toInt()} veces mas brillante que el sol!", Icons.Default.Info)
+        MyRow("Se encuentra a ${Sstar.star.distance?.times(3262)?.toInt()} años luz de nosotros!", Icons.Default.Info)
+    }
+}
+@Composable
+fun WeatherPanel(
+    weatherState: WeatherUiState,
+    onRetry: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        Surface(
+            modifier = Modifier
+                .width(280.dp)
+                .height(220.dp),
+            shape = RoundedCornerShape(50),
+            color = Color(0xFFEDE7F6),
+            tonalElevation = 6.dp,
+            shadowElevation = 8.dp,
+            border = BorderStroke(2.dp, Color(0xFFB39DDB))
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 20.dp, vertical = 18.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                when {
+                    weatherState.isLoading -> {
+                        Text(
+                            text = "Cargando clima...",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    weatherState.error != null -> {
+                        Text(
+                            text = weatherState.error,
+                            fontSize = 18.sp,
+                            color = Color.Red,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Button(
+                            modifier = Modifier.padding(top = 10.dp),
+                            onClick = onRetry
+                        ) {
+                            Text("Reintentar")
+                        }
+                    }
+
+                    weatherState.temperatureC != null -> {
+                        Text(
+                            text = weatherState.condition,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Purple40
+                        )
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        Text(
+                            text = "${weatherState.temperatureC.roundToInt()} °C",
+                            fontSize = 34.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color(0xFF1A1A1A)
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            text = "Nubosidad: ${weatherState.cloudCover ?: 0}%",
+                            fontSize = 18.sp,
+                            color = Color.DarkGray
+                        )
+
+                        Text(
+                            text = "Humedad: ${weatherState.humidity ?: 0}%",
+                            fontSize = 18.sp,
+                            color = Color.DarkGray
+                        )
+                    }
+
+                    else -> {
+                        Text(
+                            text = "Esperando ubicación...",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
+fun weatherInfo(code: Int?): String {
+    return when (code) {
+        0 -> "Cielo despejado"
+        1 -> "Mayormente despejado"
+        2 -> "Parcialmente nublado"
+        3 -> "Nublado"
+        45, 48 -> "Niebla"
+        51, 53, 55, 56, 57 -> "Llovizna"
+        61, 63, 65, 66, 67, 80, 81, 82 -> "Lluvia"
+        71, 73, 75, 77, 85, 86 -> "Nieve"
+        95, 96, 99 -> "Tormenta"
+        else -> "No se detecta el clima"
+    }
+}
+/*
 @Composable
 fun Compass(azimuth: Float){
     Box(
@@ -315,6 +478,7 @@ fun getCardinalDirection(azimuth: Float): String{
     val index = ((azimuth + 45/2) % 360 / 45).toInt()
     return directions[index]
 }
+ */
 
 @Composable
 fun MyRow(text: String, icon: ImageVector){
@@ -331,7 +495,6 @@ fun MyRow(text: String, icon: ImageVector){
 fun Vista360Screen(controller: NavController){
     val locationPermission = Manifest.permission.ACCESS_FINE_LOCATION
     val locationPermissionState = rememberPermissionState(locationPermission)
-    var showButton by remember {mutableStateOf(false)}
 
     LaunchedEffect(Unit) {
         if(!locationPermissionState.status.isGranted) {
@@ -339,23 +502,42 @@ fun Vista360Screen(controller: NavController){
         }
     }
 
-    if(locationPermissionState.status.isGranted){
-        Vista360(controller)
-    }else{
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+    Scaffold(
+        floatingActionButton = {
+            AppFab(
+                onClick = { controller.navigate(AppScreens.CameraX.name) },
+                icon = Icons.Default.PhotoCamera,
+                contentDescription = "Abrir CameraX"
+            )
+        }
+    ) { padding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
         ) {
-            val textToShow = if (locationPermissionState.status.shouldShowRationale){
-                "Stellar Vision necesita la ubicación para poder mostrar las estrellas que están encima tuyo"
-            }else{
-                "Permiso de ubicación es necesario para la vista 360. Puedes darlo en la configuración de la aplicación"
-            }
+            if(locationPermissionState.status.isGranted){
+                Vista360(controller)
+            } else {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    val textToShow = if (locationPermissionState.status.shouldShowRationale){
+                        "Stellar Vision necesita la ubicación para poder mostrar las estrellas que están encima tuyo"
+                    } else {
+                        "Permiso de ubicación es necesario para la camara. Puedes darlo en la configuración de la aplicación"
+                    }
 
-            Text(textToShow, modifier = Modifier.padding(15.dp), fontSize = 21.sp)
-            Button(onClick = { locationPermissionState.launchPermissionRequest() }, enabled = locationPermissionState.status.shouldShowRationale) {
-                Text("Pide permiso")
+                    Text(textToShow, modifier = Modifier.padding(15.dp), fontSize = 21.sp)
+                    Button(
+                        onClick = { locationPermissionState.launchPermissionRequest() },
+                        enabled = locationPermissionState.status.shouldShowRationale
+                    ) {
+                        Text("Pide permiso")
+                    }
+                }
             }
         }
     }

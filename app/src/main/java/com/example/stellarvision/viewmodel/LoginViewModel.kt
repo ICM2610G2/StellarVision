@@ -2,6 +2,7 @@ package com.example.stellarvision.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.example.stellarvision.common.validEmailAddress
+import com.example.stellarvision.data.firebase.FCMTokenDataSource
 import com.example.stellarvision.data.repository.AuthRepository
 import com.example.stellarvision.database
 import com.example.stellarvision.model.LoginState
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.update
 class LoginViewModel: ViewModel() {
     private val _loginState = MutableStateFlow<LoginState>(LoginState())
     private val repository = AuthRepository()
+    private val tokenDataSource = FCMTokenDataSource()
     val loginState = _loginState.asStateFlow()
 
     fun updateEmail(newValue: String) {
@@ -62,6 +64,7 @@ class LoginViewModel: ViewModel() {
         repository.login(email, password)
             .addOnCompleteListener {
                 if (it.isSuccessful) {
+                    tokenDataSource.saveCurrentToken()
                     onSuccess()
                 } else {
                     onError(it.exception?.message ?: "Error")
@@ -74,6 +77,10 @@ class LoginViewModel: ViewModel() {
     }
 
     fun logout() {
+        val uid = repository.getCurrentUser()?.uid
+        if (uid != null) {
+            tokenDataSource.clearToken(uid)
+        }
         repository.logout()
     }
 }

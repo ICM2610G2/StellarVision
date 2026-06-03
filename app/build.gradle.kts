@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.gms.google.services)
+    alias(libs.plugins.mapsplatform.secrets.plugin)
 }
 
 android {
@@ -11,6 +12,11 @@ android {
     }
 
     defaultConfig {
+        buildConfigField(
+            "String",
+            "MAPS_API_KEY",
+            "\"DEFAULT_API_KEY\""
+        )
         applicationId = "com.example.stellarvision"
         minSdk = 24
         targetSdk = 36
@@ -37,14 +43,7 @@ android {
 
     buildFeatures {
         compose = true
-    }
-
-    sourceSets {
-        getByName("main") {
-            assets {
-                srcDirs("src\\main\\assets", "src\\main\\assets")
-            }
-        }
+        buildConfig = true
     }
 }
 
@@ -52,29 +51,30 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation("com.google.accompanist:accompanist-permissions:0.37.3")
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.foundation)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.kotlinx.coroutines.play.services)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.compose.foundation)
-
+    implementation("com.google.code.gson:gson:2.14.0")
     implementation("io.coil-kt:coil-compose:2.7.0")
-    implementation("com.google.accompanist:accompanist-permissions:0.37.3")
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.material:material-icons-core")
 
-    implementation("org.osmdroid:osmdroid-android:6.1.20")
-    implementation("com.github.MKergall:osmbonuspack:6.8.0")
-    implementation("com.google.android.gms:play-services-location:21.3.0")
+    implementation("com.google.maps.android:maps-compose:8.3.0")
 
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-messaging-ktx")
     implementation(libs.firebase.database)
 
     implementation(libs.androidx.credentials)
@@ -82,6 +82,18 @@ dependencies {
     implementation(libs.googleid)
 
     implementation(libs.androidx.room.ktx)
+    implementation(libs.firebase.auth)
+
+    implementation("com.google.firebase:firebase-storage-ktx")
+    implementation(libs.play.services.maps)
+
+    val cameraxVersion = "1.3.0"
+    implementation("androidx.camera:camera-core:${cameraxVersion}")
+    implementation("androidx.camera:camera-camera2:${cameraxVersion}")
+    implementation("androidx.camera:camera-lifecycle:${cameraxVersion}")
+    implementation("androidx.camera:camera-view:${cameraxVersion}")
+    implementation("androidx.camera:camera-extensions:${cameraxVersion}")
+    implementation(libs.firebase.messaging)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
