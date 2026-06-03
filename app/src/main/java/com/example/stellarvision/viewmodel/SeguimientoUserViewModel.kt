@@ -36,7 +36,8 @@ class SeguimientoUserViewModel : ViewModel() {
 
     private val movementThresholdMeters = 10f
 
-    private var lastFirebaseLocation: LatLng? = null
+    private var lastPublishedLocation: LatLng? = null
+    private var lastMyLocationAccepted: LatLng? = null
     private var lastTrackedLocationAccepted: LatLng? = null
 
     fun startTrackingUser(userId: String) {
@@ -124,26 +125,23 @@ class SeguimientoUserViewModel : ViewModel() {
 
     fun updateMyLocation(location: Location) {
         val newMyLocation = LatLng(location.latitude, location.longitude)
-        val previousFirebaseLocation = lastFirebaseLocation
+        val previousMyLocation = lastMyLocationAccepted
 
-        val shouldUpdateFirebase =
-            previousFirebaseLocation == null ||
-                    distanceBetween(previousFirebaseLocation, newMyLocation) >= movementThresholdMeters
+        val shouldAcceptMyLocation =
+            previousMyLocation == null ||
+                    distanceBetween(previousMyLocation, newMyLocation) >= movementThresholdMeters
 
-        if (!shouldUpdateFirebase) {
+        if (!shouldAcceptMyLocation) {
             Log.d(
                 "SeguimientoUser",
-                "Mi ubicación cambió menos de $movementThresholdMeters m. No se actualiza Firebase."
+                "Mi ubicación cambió menos de $movementThresholdMeters m. No se actualiza marcador local."
             )
+
+            publishMyLocationIfNeeded(location)
             return
         }
 
-        lastFirebaseLocation = newMyLocation
-
-        Log.d(
-            "SeguimientoUser",
-            "Mi ubicación superó $movementThresholdMeters m. Se actualiza Firebase."
-        )
+        lastMyLocationAccepted = newMyLocation
 
         _state.update { current ->
             current.copy(
@@ -154,6 +152,27 @@ class SeguimientoUserViewModel : ViewModel() {
                 )
             )
         }
+
+        publishMyLocationIfNeeded(location)
+    }
+
+    fun publishMyLocationIfNeeded(location: Location) {
+        val newLocation = LatLng(location.latitude, location.longitude)
+        val previousPublishedLocation = lastPublishedLocation
+
+        val shouldPublish =
+            previousPublishedLocation == null ||
+                    distanceBetween(previousPublishedLocation, newLocation) >= movementThresholdMeters
+
+        if (!shouldPublish) {
+            Log.d(
+                "SeguimientoUser",
+                "Movimiento menor a $movementThresholdMeters m. No se actualiza Firebase."
+            )
+            return
+        }
+
+        lastPublishedLocation = newLocation
 
         updateMyLocationInFirebase(
             latitude = location.latitude,
@@ -168,7 +187,7 @@ class SeguimientoUserViewModel : ViewModel() {
         val uid = auth.currentUser?.uid
 
         if (uid == null) {
-            Log.e("SeguimientoUser", "No hay usuario autenticado. No se actualiza ubicación.")
+            Log.d("SeguimientoUser", "No hay usuario autenticado. No se actualiza ubicación.")
             return
         }
 
@@ -182,7 +201,10 @@ class SeguimientoUserViewModel : ViewModel() {
             .child(uid)
             .updateChildren(updates)
             .addOnSuccessListener {
-                Log.d("SeguimientoUser", "Ubicación actualizada en Firebase.")
+                Log.d(
+                    "SeguimientoUser",
+                    "Ubicación publicada en Firebase: lat=$latitude, lng=$longitude"
+                )
             }
             .addOnFailureListener { e ->
                 Log.e("SeguimientoUser", "Error actualizando ubicación en Firebase", e)
