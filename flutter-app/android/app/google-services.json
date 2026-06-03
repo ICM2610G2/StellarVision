@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "1003186192537",
+    "firebase_url": "https://stellar-vision-9cc3f-default-rtdb.firebaseio.com",
+    "project_id": "stellar-vision-9cc3f",
+    "storage_bucket": "stellar-vision-9cc3f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1003186192537:android:f6435f5b788e010c0ab808",
+        "android_client_info": {
+          "package_name": "com.example.stellar_vision"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFolyfmKLokObo3iK7jRXJT6oTYuv29gk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1003186192537:android:bf7480ebb67caf660ab808",
+        "android_client_info": {
+          "package_name": "com.example.stellarvision"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFolyfmKLokObo3iK7jRXJT6oTYuv29gk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
