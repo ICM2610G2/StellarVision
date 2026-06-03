@@ -197,7 +197,7 @@ fun SeguimientoUsuarioScreen(
                         title = state.trackedUser?.username ?: "Usuario seguido",
                         snippet = "Ubicación en tiempo real",
                         icon = BitmapDescriptorFactory.defaultMarker(
-                            BitmapDescriptorFactory.HUE_RED
+                            BitmapDescriptorFactory.HUE_VIOLET
                         )
                     )
                 }
@@ -210,7 +210,7 @@ fun SeguimientoUsuarioScreen(
                         title = "Mi ubicación",
                         snippet = "Usuario que hace seguimiento",
                         icon = BitmapDescriptorFactory.defaultMarker(
-                            BitmapDescriptorFactory.HUE_VIOLET
+                            BitmapDescriptorFactory.HUE_RED
                         )
                     )
                 }

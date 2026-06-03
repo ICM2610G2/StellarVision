@@ -1,6 +1,7 @@
 package com.example.stellarvision.viewmodel
 
 import android.location.Location
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.stellarvision.model.MyUser
 import com.google.android.gms.maps.model.LatLng
@@ -33,6 +34,11 @@ class SeguimientoUserViewModel : ViewModel() {
     private var trackedUserRef = database.getReference("users")
     private var trackedUserListener: ValueEventListener? = null
 
+    private val movementThresholdMeters = 10f
+
+    private var lastFirebaseLocation: LatLng? = null
+    private var lastTrackedLocationAccepted: LatLng? = null
+
     fun startTrackingUser(userId: String) {
         stopTrackingUser()
 
@@ -45,25 +51,71 @@ class SeguimientoUserViewModel : ViewModel() {
 
                 val hasValidLocation = user.latitude != 0.0 || user.longitude != 0.0
 
-                val trackedLocation = if (hasValidLocation) {
+                val newTrackedLocation = if (hasValidLocation) {
                     LatLng(user.latitude, user.longitude)
                 } else {
                     null
                 }
 
+                if (newTrackedLocation == null) {
+                    _state.update {
+                        it.copy(
+                            trackedUser = user,
+                            trackedUserLocation = null,
+                            distanceMeters = null,
+                            routePoints = emptyList()
+                        )
+                    }
+                    return
+                }
+
+                val previousTrackedLocation = lastTrackedLocationAccepted
+
+                val shouldAcceptTrackedLocation =
+                    previousTrackedLocation == null ||
+                            distanceBetween(previousTrackedLocation, newTrackedLocation) >= movementThresholdMeters
+
+                if (!shouldAcceptTrackedLocation) {
+                    Log.d(
+                        "SeguimientoUser",
+                        "Usuario seguido se movió menos de $movementThresholdMeters m. No se actualiza marcador ni cámara."
+                    )
+
+                    _state.update { current ->
+                        current.copy(
+                            trackedUser = user,
+                            distanceMeters = calculateDistance(
+                                from = current.myLocation,
+                                to = current.trackedUserLocation
+                            )
+                        )
+                    }
+
+                    return
+                }
+
+                lastTrackedLocationAccepted = newTrackedLocation
+
+                Log.d(
+                    "SeguimientoUser",
+                    "Usuario seguido superó $movementThresholdMeters m. Se actualiza marcador y cámara."
+                )
+
                 _state.update { current ->
                     current.copy(
                         trackedUser = user,
-                        trackedUserLocation = trackedLocation,
+                        trackedUserLocation = newTrackedLocation,
                         distanceMeters = calculateDistance(
                             from = current.myLocation,
-                            to = trackedLocation
+                            to = newTrackedLocation
                         )
                     )
                 }
             }
 
-            override fun onCancelled(error: DatabaseError) = Unit
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("SeguimientoUser", "Error leyendo usuario seguido", error.toException())
+            }
         }
 
         trackedUserListener = listener
@@ -71,13 +123,33 @@ class SeguimientoUserViewModel : ViewModel() {
     }
 
     fun updateMyLocation(location: Location) {
-        val myLatLng = LatLng(location.latitude, location.longitude)
+        val newMyLocation = LatLng(location.latitude, location.longitude)
+        val previousFirebaseLocation = lastFirebaseLocation
+
+        val shouldUpdateFirebase =
+            previousFirebaseLocation == null ||
+                    distanceBetween(previousFirebaseLocation, newMyLocation) >= movementThresholdMeters
+
+        if (!shouldUpdateFirebase) {
+            Log.d(
+                "SeguimientoUser",
+                "Mi ubicación cambió menos de $movementThresholdMeters m. No se actualiza Firebase."
+            )
+            return
+        }
+
+        lastFirebaseLocation = newMyLocation
+
+        Log.d(
+            "SeguimientoUser",
+            "Mi ubicación superó $movementThresholdMeters m. Se actualiza Firebase."
+        )
 
         _state.update { current ->
             current.copy(
-                myLocation = myLatLng,
+                myLocation = newMyLocation,
                 distanceMeters = calculateDistance(
-                    from = myLatLng,
+                    from = newMyLocation,
                     to = current.trackedUserLocation
                 )
             )
@@ -93,7 +165,12 @@ class SeguimientoUserViewModel : ViewModel() {
         latitude: Double,
         longitude: Double
     ) {
-        val uid = auth.currentUser?.uid ?: return
+        val uid = auth.currentUser?.uid
+
+        if (uid == null) {
+            Log.e("SeguimientoUser", "No hay usuario autenticado. No se actualiza ubicación.")
+            return
+        }
 
         val updates = mapOf(
             "latitude" to latitude,
@@ -104,6 +181,12 @@ class SeguimientoUserViewModel : ViewModel() {
         database.getReference("users")
             .child(uid)
             .updateChildren(updates)
+            .addOnSuccessListener {
+                Log.d("SeguimientoUser", "Ubicación actualizada en Firebase.")
+            }
+            .addOnFailureListener { e ->
+                Log.e("SeguimientoUser", "Error actualizando ubicación en Firebase", e)
+            }
     }
 
     private fun calculateDistance(
@@ -111,7 +194,13 @@ class SeguimientoUserViewModel : ViewModel() {
         to: LatLng?
     ): Float? {
         if (from == null || to == null) return null
+        return distanceBetween(from, to)
+    }
 
+    private fun distanceBetween(
+        from: LatLng,
+        to: LatLng
+    ): Float {
         val results = FloatArray(1)
 
         Location.distanceBetween(
