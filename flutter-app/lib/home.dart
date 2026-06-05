@@ -99,7 +99,7 @@ class _HomeWidgetState extends State<HomeWidget>{
               const SizedBox(height: 16),
 
               TextFormField(
-                controller: _tecName,
+                controller: _tecAdress,
                 keyboardType: TextInputType.text,
                 decoration: InputDecoration(
                     labelText: "Dirección del lugar",
