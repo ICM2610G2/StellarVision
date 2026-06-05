@@ -11,9 +11,6 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Looper
 import android.util.Log
-import androidx.camera.core.CameraSelector
-import androidx.camera.view.CameraController
-import androidx.camera.view.LifecycleCameraController
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,19 +21,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -47,18 +46,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.example.stellarvision.model.Star
-import com.example.stellarvision.R
 import com.example.stellarvision.common.createLocationCallback
 import com.example.stellarvision.common.createLocationRequest
 import com.example.stellarvision.common.getStarsFromHYG
@@ -68,48 +64,30 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
-import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.collections.emptyList
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.Priority
 import kotlin.math.abs
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import androidx.compose.material.icons.filled.PhotoCamera
-import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.withStyle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.stellarvision.common.AppFab
-import com.example.stellarvision.common.CameraXControls
-import com.example.stellarvision.common.CameraXPhotoSheetContent
-import com.example.stellarvision.common.CameraXPreview
 import com.example.stellarvision.common.ScreenStar
-import com.example.stellarvision.common.StarOverlay
 import com.example.stellarvision.navigation.AppScreens
 import com.example.stellarvision.ui.theme.PinkStarList
-import com.example.stellarvision.ui.theme.Primary
 import com.example.stellarvision.ui.theme.Purple40
-import com.example.stellarvision.ui.theme.Secondary
-import com.example.stellarvision.ui.theme.Surface
-import com.example.stellarvision.viewmodel.CameraXViewModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import com.example.stellarvision.viewmodel.WeatherUiState
 import com.example.stellarvision.viewmodel.WeatherViewModel
 import kotlin.math.roundToInt
@@ -541,7 +519,7 @@ fun getCardinalDirection(azimuth: Float): String{
 
 
 
-@OptIn(ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun Vista360Screen(controller: NavController){
     val locationPermission = Manifest.permission.ACCESS_FINE_LOCATION
@@ -554,6 +532,20 @@ fun Vista360Screen(controller: NavController){
     }
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(text = "Lista de estrellas visibles", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = { controller.popBackStack() }) {
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Purple40,
+                    titleContentColor = Color.White
+                )
+            )
+        },
         floatingActionButton = {
             AppFab(
                 onClick = { controller.navigate(AppScreens.CameraX.name) },

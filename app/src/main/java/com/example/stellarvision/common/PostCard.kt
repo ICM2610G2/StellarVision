@@ -73,7 +73,7 @@ fun PostCard(
                 ElevatedCard(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 180.dp, max = 420.dp),
+                        .heightIn(min = 180.dp, max = 450.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Box(

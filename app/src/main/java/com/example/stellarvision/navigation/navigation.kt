@@ -17,7 +17,6 @@ import com.example.stellarvision.screens.Publicacion
 import com.example.stellarvision.screens.Register1
 import com.example.stellarvision.screens.Register2
 import com.example.stellarvision.screens.Vista360Screen
-import com.example.stellarvision.screens.Vistalocalizacion
 import com.example.stellarvision.viewmodel.LoginViewModel
 import com.example.stellarvision.viewmodel.RegisterViewModel
 import com.example.stellarvision.screens.CameraXScreen
@@ -82,9 +81,6 @@ fun Navigation(){
         }
         composable(AppScreens.Publicacion.name) {
             Publicacion(navController)
-        }
-        composable(AppScreens.Vistalocalizacion.name) {
-            Vistalocalizacion(navController)
         }
         composable(AppScreens.Mensajeria.name) {
             Mensajeria(navController)
