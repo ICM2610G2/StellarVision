@@ -73,20 +73,28 @@ fun PostCard(
                 ElevatedCard(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp),
+                        .heightIn(min = 180.dp, max = 420.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    AsyncImage(
-                        model = imageUrl,
-                        contentDescription = "Foto de la observación",
+                    Box(
                         modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
+                        contentAlignment = Alignment.Center
+                    ) {
+                        AsyncImage(
+                            model = imageUrl,
+                            contentDescription = "Foto de la observación",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
-            Divider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+            HorizontalDivider(
+                thickness = 0.5.dp,
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
             Spacer(modifier = Modifier.height(8.dp))
 
             Row(
