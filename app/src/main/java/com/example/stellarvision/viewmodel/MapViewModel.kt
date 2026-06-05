@@ -16,16 +16,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import android.os.SystemClock
 
-private var filteredLux: Float? = null
-private var pendingDarkMode: Boolean? = null
-private var pendingSince: Long = 0L
-
-private val darkEnterThreshold = 80f
-private val lightExitThreshold = 300f
-private val smoothingFactor = 0.12f
-private val stableTimeMs = 2000L
-
 class MapViewModel : ViewModel() {
+
+    private var filteredLux: Float? = null
+    private var pendingDarkMode: Boolean? = null
+    private var pendingSince: Long = 0L
+
+    private val darkEnterThreshold = 80f
+    private val lightExitThreshold = 300f
+    private val smoothingFactor = 0.12f
+    private val stableTimeMs = 2000L
 
     private val _state = MutableStateFlow(mapState())
     val state = _state.asStateFlow()

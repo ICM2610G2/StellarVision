@@ -30,13 +30,18 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -541,7 +546,7 @@ fun getCardinalDirection(azimuth: Float): String{
 
 
 
-@OptIn(ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun Vista360Screen(controller: NavController){
     val locationPermission = Manifest.permission.ACCESS_FINE_LOCATION
@@ -554,6 +559,20 @@ fun Vista360Screen(controller: NavController){
     }
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(text = "Lista de estrellas visibles", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = { controller.popBackStack() }) {
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Purple40,
+                    titleContentColor = Color.White
+                )
+            )
+        },
         floatingActionButton = {
             AppFab(
                 onClick = { controller.navigate(AppScreens.CameraX.name) },
