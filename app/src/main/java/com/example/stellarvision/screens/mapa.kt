@@ -107,7 +107,12 @@ fun MapaPermiso(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Text("Se necesita el permiso de ubicación para mostrar el mapa.")
+            Text(
+                "El permiso de ubicación es necesario para mostrar el mapa. \nPuedes darlo en la configuración de la aplicación",
+                modifier = Modifier.padding(15.dp),
+                fontSize = 21.sp,
+                fontWeight = FontWeight.Medium
+            )
         }
         return
     }
